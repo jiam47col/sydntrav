@@ -124,6 +124,18 @@
         let isLargeText = false;
         let isChartView = true;
 
+        // 核心邏輯：將 \n 轉成 HTML 的 <br>，將 ** 轉成 <strong>
+function formatText(text) {
+    if (!text) return "";
+    return text
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-[var(--text-primary)]">$1</span>');
+}
+
+// 在 render() 渲染時，記得呼叫它：
+// 原本是：<p>${item.desc}</p>
+// 改成：<p>${formatText(item.desc)}</p>
+
         function toggleFontSize() { isLargeText = !isLargeText; document.documentElement.classList.toggle('large-text', isLargeText); }
 
         // ====== 核心功能：讀取 Google Sheets ======
