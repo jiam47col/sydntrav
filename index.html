@@ -27,7 +27,9 @@
         .modal-open .modal-content { transform: translateY(0); }
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .pie-chart { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#1D1D1F 0% 50%, #86868B 50% 80%, #E5E5EA 80% 100%); }
+        /* 質感大地色系圓餅圖 */
+        .pie-chart { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#A3B18A 0% 35%, #798A9C 35% 70%, #E0C097 70% 100%); }
+        .strikethrough { text-decoration: line-through; color: #D1D1D6; }
     </style>
 </head>
 <body class="max-w-md mx-auto min-h-screen relative pb-28 overflow-x-hidden">
@@ -90,12 +92,9 @@
 
     <script>
         // 初始化 LocalStorage 資料
-        let appData = JSON.parse(localStorage.getItem('sydneyApp_v5')) || { customEvents: {}, expenses: [] };
-        function saveData() { localStorage.setItem('sydneyApp_v5', JSON.stringify(appData)); }
+        let appData = JSON.parse(localStorage.getItem('sydneyApp_v6')) || { customEvents: {}, expenses: [], checkItems: {} };
+        function saveData() { localStorage.setItem('sydneyApp_v6', JSON.stringify(appData)); }
 
-        // ==========================================
-        // 核心資料庫 (Hard-coded，保證穩定運作)
-        // ==========================================
         const travelData = {
             days: [
                 { id: "day1", date: "8/5", weekday: "週三" },
@@ -108,75 +107,61 @@
             schedule: {
                 "day1": [
                     { time: "10:45", title: "抵達雪梨", desc: "辦理出關後，會合搭乘 Uber 前往 Burwood 住宿點(Airbnb)辦理入住並放置行李。", mapQuery: "Sydney Airport" },
-                    { time: "14:00", title: "蔚藍海岸線自駕 (Cape Solander)", desc: "景點特色：8月正值黃金賞鯨季，Cape Solander 現場設有非常完善、全平坦的無障礙木棧道，長輩散步起來完全不傷膝蓋、不費腿。<br><br><span class='font-bold text-[#FF3B30]'>請注意：</span>8月的海風非常刺骨，天黑得早(約17:20日落)，下午3點過後氣溫會陡降，請注意保暖。", mapQuery: "Cape Solander", 
-                      guide: { 
-                        title: "植物灣國家公園景點故事", 
-                        text: ["**澳洲近代歷史的起點之一**", "1770年，英國探險家詹姆斯．庫克船長（Captain James Cook）率領「奮進號」抵達澳洲東岸，並停靠於附近的植物灣（Botany Bay）。這次航行讓英國開始認識澳洲，並為日後殖民與現代澳洲的發展揭開序幕。", "因此，Cape Solander 一帶常被視為：「澳洲近代歷史開始的地方之一」", "**🌿 Botany Bay 名稱由來**", "「Botany」意為植物學。當年庫克船長與隨行植物學家丹尼爾．索蘭德（Daniel Solander）登陸後，發現這裡擁有大量與歐洲截然不同的植物種類。短短幾天內，他們便採集了數百件植物標本，對這片土地豐富而獨特的生態感到驚嘆。", "為了紀念這項重要的植物學發現，這座海灣後來被命名為：Botany Bay（植物灣），這個名稱也一直沿用至今。"],
-                        images: ["https://images.unsplash.com/photo-1547963388-75c138fbd8f1?w=600&h=400&fit=crop"] 
-                      } 
+                    { time: "14:00", title: "蔚藍海岸線自駕 (Cape Solander)", desc: "景點特色：8月正值黃金賞鯨季，現場有平坦無障礙木棧道，長輩散步完全不傷膝蓋。<br><br><span class='font-bold text-[#FF3B30]'>請注意：</span>海風刺骨，天黑得早(約17:20日落)，下午3點後氣溫陡降，請注意保暖。", mapQuery: "Cape Solander", 
+                      guide: { title: "植物灣國家公園", text: ["**澳洲近代歷史的起點之一**", "1770年，英國探險家庫克船長率領「奮進號」抵達澳洲東岸，並停靠於此。由於發現大量特有植物，隨行植物學家將此地命名為 Botany Bay（植物灣）。"], images: ["https://images.unsplash.com/photo-1547963388-75c138fbd8f1?w=600&h=400&fit=crop"] } 
                     },
-                    { time: "17:30", title: "回到 Burwood 住宿點", desc: "Burwood Chinatown 是一條充滿霓虹燈與紅燈籠的室內外複合式餐飲街，聚集了上百種亞洲平價小吃，氣氛非常像亞洲的夜市。", mapQuery: "Burwood NSW", restaurants: [{ name: "Hansang", tag: "🇰🇷 韓餐", highlight: "Strathfield" }, { name: "Meet Taiwan Café", tag: "🧋 台味", highlight: "回程路過" }] }
+                    { time: "17:30", title: "回到 Burwood 住宿點", desc: "Burwood Chinatown 是一條充滿霓虹燈與紅燈籠的室內外複合式餐飲街。", mapQuery: "Burwood NSW", restaurants: [{ name: "Hansang", tag: "🇰🇷 韓餐", highlight: "Strathfield" }, { name: "Meet Taiwan Café", tag: "🧋 台味", highlight: "回程路過" }] }
                 ],
                 "day2": [
-                    { time: "09:00", title: "藍山國家公園 Scenic World", desc: "07:00-07:30 提早出發避開人潮，9點抵達。<br><br>景點特色：景觀世界提供全世界最陡峭的紅底景觀鐵路、高空纜車與雨林步道。完全免爬山即可輕鬆俯瞰著名的三姐妹岩。冬季山區非常容易起大霧，提早抵達能確保最佳視野。", mapQuery: "Scenic World Blue Mountains",
-                      guide: {
-                        title: "藍山國家公園景點故事",
-                        text: ["**世界遺產的由來：**", "藍山國家公園於 2000 年被列入 UNESCO 世界自然遺產。這裡保存了大片原始桉樹森林，是全球最重要的桉樹生態系之一。", "**為什麼叫「藍山」？**", "藍山其實不是真的藍色。藍山的名字來自桉樹森林形成的天然藍色薄霧。山區遍布大量桉樹（尤加利樹），樹葉釋放出的天然油脂在陽光照射下形成細微霧氣，讓整片山谷遠看呈現夢幻的藍色，因此被稱為「Blue Mountains」。", "**三姐妹岩傳說：**", "藍山最著名的地標是三姐妹岩，根據當地原住民傳說，三位姐妹因部落衝突而被長老施法變成岩石，希望保護她們免受傷害。然而長老在戰亂中離世，魔法再也無法解除，因此三姐妹永遠守護著這片山谷。"],
-                        images: ["https://images.unsplash.com/photo-1533038590840-1cbeaecac34c?w=600&h=400&fit=crop"]
-                      }
+                    { time: "09:00", title: "藍山國家公園 Scenic World", desc: "07:00 提早出發避開人潮。<br><br>景點特色：提供全世界最陡峭的紅底景觀鐵路、高空纜車。完全免爬山即可輕鬆俯瞰著名的三姐妹岩。", mapQuery: "Scenic World Blue Mountains",
+                      guide: { title: "藍山國家公園", text: ["**世界遺產的由來：**", "這裡保存了大片原始桉樹森林。藍山的名字來自桉樹釋放的天然油脂在陽光照射下形成細微霧氣，讓山谷遠看呈現夢幻藍色。"], images: ["https://images.unsplash.com/photo-1533038590840-1cbeaecac34c?w=600&h=400&fit=crop"] }
                     },
-                    { time: "12:30", title: "羅拉小鎮 Leura", desc: "景點特色：充滿古典風格的精緻山區小鎮，適合悠閒漫步。", mapQuery: "Leura", restaurants: [{ name: "The Yellow Deli / Red Door", tag: "☕ 午餐", highlight: "輕食咖啡" }, { name: "Josophans Fine Chocolates", tag: "🍫 甜點", highlight: "獲獎松露巧克力" }] },
-                    { time: "16:00", title: "DFO Homebush Outlet", desc: "景點特色：進駐了許多國際精品與高端品牌。週四設有 Late Night Shopping，延長營業至晚上 20:00，下午進場能完美避開週末瘋狂人潮。", mapQuery: "DFO Homebush" },
-                    { time: "20:00", title: "回到住宿點", desc: "晚餐建議：DFO 內美食街解決，或者回 Burwood 享用中式熱炒。", mapQuery: "Burwood", restaurants: [{ name: "陳師傅東北菜", tag: "🥢 中式", highlight: "熱炒" }] }
+                    { time: "12:30", title: "羅拉小鎮 Leura", desc: "充滿古典風格的精緻山區小鎮，適合悠閒漫步。", mapQuery: "Leura", restaurants: [{ name: "The Yellow Deli", tag: "☕ 午餐", highlight: "輕食咖啡" }, { name: "Josophans", tag: "🍫 甜點", highlight: "松露巧克力" }] },
+                    { time: "16:00", title: "DFO Homebush Outlet", desc: "週四 Late Night Shopping，延長營業至晚上 20:00，下午進場能完美避開週末人潮。", mapQuery: "DFO Homebush" },
+                    { time: "20:00", title: "回到住宿點", desc: "晚餐建議：DFO 內美食街，或回 Burwood 享用熱炒。", mapQuery: "Burwood", restaurants: [{ name: "陳師傅東北菜", tag: "🥢 中式", highlight: "熱炒" }] }
                 ],
                 "day3": [
-                    { time: "08:00", title: "搭車前往雪梨大學", desc: "景點特色：校園內的 Main Quadrangle 沙石城堡主樓是古典哥德式建築，極具哈利波特霍格華茲風格。", mapQuery: "The Main Quadrangle University of Sydney" },
-                    { time: "12:00", title: "Newtown", desc: "景點特色：新鎮 Newtown 是澳洲雪梨充滿波西米亞風格與文藝氣息的內城區。這裡沒有高樓大廈，保留了大量19世紀的古老建築與迷人街頭塗鴉。", mapQuery: "Newtown Sydney", restaurants: [{ name: "Thai Pothong Restaurant", tag: "🇹🇭 泰式", highlight: "人氣午餐" }] },
-                    { time: "14:00", title: "下午市區巡禮", desc: "新鎮出發直達麥覺理夫人石椅欣賞歌劇院與港灣大橋，黃昏點燈沿著平坦的農夫椅步道往歌劇院方向悠閒散步。<br><br>散步途中會經過皇家植物園的海濱外緣，這裡種植了許多澳洲特有的冬季古老植物與巨型無花果樹。空氣非常清新，是拍攝家族大合照的絕佳機位。<br><br>雪梨歌劇院位於便利朗角，其前衛的「貝殼」與「風帆」造型打破了傳統建築框架，被列為世界文化遺產。", mapQuery: "Mrs Macquaries Chair",
-                      guide: {
-                        title: "麥覺理夫人石椅景點故事",
-                        text: ["**麥覺理夫人石椅（Mrs Macquarie's Chair）**", "這座由砂岩雕刻而成的石椅建於1810年左右，當時總督夫人伊麗莎白．麥覺理經常來到雪梨港邊散步，並喜歡坐在這處突出的岩石岬角欣賞港灣景色，以及眺望進出雪梨港的船隻。", "據說總督特地命人將一塊天然砂岩雕鑿成座椅，因此後來被稱為：Mrs Macquarie's Chair。", "如今已成為雪梨最著名的觀景點之一，可同時欣賞雪梨歌劇院、港灣大橋與雪梨港景色，被譽為「雪梨最經典的拍照地點」。"],
-                        images: ["https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600&h=400&fit=crop"]
-                      }
+                    { time: "08:00", title: "雪梨大學", desc: "Main Quadrangle 沙石城堡主樓是古典哥德式建築，極具哈利波特霍格華茲風格。", mapQuery: "The Main Quadrangle University of Sydney" },
+                    { time: "12:00", title: "Newtown", desc: "充滿波西米亞風格與文藝氣息的內城區，保留大量19世紀古老建築與街頭塗鴉。", mapQuery: "Newtown Sydney", restaurants: [{ name: "Thai Pothong", tag: "🇹🇭 泰式", highlight: "人氣午餐" }] },
+                    { time: "14:00", title: "麥覺理夫人石椅與歌劇院", desc: "沿著平坦的步道往歌劇院方向悠閒散步，皇家植物園空氣清新，是拍攝家族大合照的絕佳機位。", mapQuery: "Mrs Macquaries Chair",
+                      guide: { title: "麥覺理夫人石椅", text: ["建於1810年，總督夫人伊麗莎白經常來此散步，總督特地命人將天然砂岩雕鑿成座椅。如今是同時欣賞雪梨歌劇院與港灣大橋的最佳機位。"], images: ["https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600&h=400&fit=crop"] }
                     },
-                    { time: "18:00", title: "市區晚餐", desc: "晚餐：市區晚餐 (唐人街有周五夜市)", mapQuery: "Chinatown Sydney" }
+                    { time: "18:00", title: "市區晚餐", desc: "唐人街有周五夜市", mapQuery: "Chinatown Sydney" }
                 ],
                 "day4": [
-                    { time: "10:00", title: "塔龍加動物園 Taronga Zoo", desc: "08:30-08:50間從 Burwood 搭火車至 Wynyard 再轉乘公車100號到動物園。<br><br>景點特色：擁有眺望雪梨天際線的絕佳位置。自大門口入場，順著全園區無障礙的平緩「下坡步道」一路輕鬆往下走，完全不費腿。能以市區絕美天際線為背景，順光觀賞澳洲特有野生動物長頸鹿、無尾熊。", mapQuery: "Taronga Zoo Sydney", restaurants: [{ name: "Burwood 車站外帶", tag: "🍣 壽司", highlight: "一邊曬太陽一邊享用" }] },
-                    { time: "14:00", title: "搭渡輪回環形碼頭", desc: "逛完動物園後，搭渡輪回環形碼頭；歌劇院附近 + Barangaroo 逛逛。", mapQuery: "Circular Quay" },
-                    { time: "17:00", title: "岩石區、巴蘭加魯", desc: "1. 岩石區 The Rocks 這是雪梨歷史最悠久的街區，漫步於古老砂岩建築與巷弄間；週末市集販售在地藝術家的手工藝品與街頭小吃。<br>2. 巴蘭加魯 Barangaroo 水岸餐飲區能體驗雪梨最新的現代港區夜景。", mapQuery: "The Rocks", restaurants: [{ name: "The Meat & Wine Co", tag: "🥩 牛排", highlight: "水岸晚餐(需訂位)" }],
-                      guide: {
-                        title: "岩石區景點故事",
-                        text: ["**雪梨的起源地：**", "1788年，英國第一艦隊（First Fleet）抵達澳洲，建立了歐洲人在澳洲的第一個永久殖民據點。當時的殖民者最早就是在今天的岩石區一帶登陸與定居，因此這裡被認為是：「現代雪梨的發源地」。", "**為什麼叫 The Rocks？**", "早期殖民者來到這裡時，發現港口周圍遍布大型砂岩岩層（Sandstone），他們直接用這些天然砂岩建造房屋、碼頭與倉庫，因此這個區域被稱為：The Rocks（岩石區）。", "岩石區擁有澳洲歷史最悠久的酒吧之一：Fortune of War Hotel，自1828年營業至今，已有近兩百年歷史，許多水手、商人與早期移民都曾在此聚集。"],
-                        images: ["https://images.unsplash.com/photo-1596700018593-95fae2d0eb51?w=600&h=400&fit=crop"]
-                      }
+                    { time: "10:00", title: "塔龍加動物園 Taronga Zoo", desc: "從大門口入場順著無障礙「下坡步道」一路輕鬆往下走。能以絕美天際線為背景觀賞長頸鹿。", mapQuery: "Taronga Zoo Sydney" },
+                    { time: "14:00", title: "搭渡輪回環形碼頭", desc: "逛完動物園後，搭渡輪回環形碼頭，歌劇院附近逛逛。", mapQuery: "Circular Quay" },
+                    { time: "17:00", title: "岩石區、巴蘭加魯", desc: "岩石區是雪梨歷史最悠久的街區；巴蘭加魯能體驗現代港區夜景。", mapQuery: "The Rocks", restaurants: [{ name: "The Meat & Wine Co", tag: "🥩 牛排", highlight: "需訂位" }],
+                      guide: { title: "岩石區", text: ["**雪梨的起源地：**", "1788年英國第一艦隊抵達澳洲，最早便是在岩石區登陸定居。早期殖民者用天然砂岩建造房屋，因此被稱為 The Rocks。"], images: ["https://images.unsplash.com/photo-1596700018593-95fae2d0eb51?w=600&h=400&fit=crop"] }
                     }
                 ],
                 "day5": [
                     { time: "09:00", title: "市區飯店", desc: "ibis Styles Sydney Central。先到飯店寄放行李，全程空手輕鬆活動。", mapQuery: "ibis Styles Sydney Central" },
-                    { time: "10:00", title: "新南威爾斯畫廊", desc: "景點特色：新南威爾斯畫廊又稱新南威爾斯州立美術館，是澳洲最指標性的美術館之一；美術館分為古典優雅的老館與現代前衛的新館，兩館相互輝映，且全館皆可免費入場。", mapQuery: "Art Gallery of New South Wales" },
-                    { time: "14:00", title: "市區自由活動", desc: "1. Paddy’s Markets：擁有超過150年歷史，是雪梨最大的室內傳統大棚市集。伴手禮相對便宜，適合採買無尾熊玩偶、綿羊油。<br>2. QVB：被譽為世界最美的購物中心之一，擁有拜占庭式建築、古典升降電梯與極美的彩色玻璃窗，全平坦室內空間逛起來非常舒適。", mapQuery: "Queen Victoria Building" },
-                    { time: "18:00", title: "唐人街+達令港夜景", desc: "1. 達令港又稱情人港，是雪梨最知名的濱水休閒與行人專用區。融合現代高樓與多元美食。<br>2. 唐人街是全澳最大華埠，完美融合歷史牌樓與現代光影藝術。", mapQuery: "Darling Harbour", restaurants: [{ name: "鼎泰豐 / 小龍坎", tag: "🥢 亞洲", highlight: "World Square" }] }
+                    { time: "10:00", title: "新南威爾斯畫廊", desc: "分為古典優雅的老館與現代前衛的新館，兩館相互輝映，免費入場。", mapQuery: "Art Gallery of New South Wales" },
+                    { time: "14:00", title: "市區自由活動", desc: "1. Paddy’s Markets：室內傳統大棚市集。<br>2. QVB：世界最美的購物中心之一，擁有拜占庭式建築。", mapQuery: "Queen Victoria Building" },
+                    { time: "18:00", title: "唐人街+達令港夜景", desc: "達令港是雪梨最知名的濱水休閒區。", mapQuery: "Darling Harbour", restaurants: [{ name: "鼎泰豐 / 小龍坎", tag: "🥢 亞洲", highlight: "World Square" }] }
                 ],
                 "day6": [
-                    { time: "10:00", title: "ibis 辦理退房", desc: "吃完飯店早餐後將行李免費寄存於飯店前台，進行最後市區巡禮。", mapQuery: "ibis Styles Sydney Central" },
-                    { time: "11:00", title: "雪梨魚市場", desc: "從飯店門口搭輕軌一線直達。這是南半球最大的海鮮市場，可瘋狂大啖起司焗烤大龍蝦、現開生蠔與皇帝蟹（建議坐室內避寒風與海鷗）。", mapQuery: "Sydney Fish Market" },
-                    { time: "12:00", title: "下午市區漫遊 (二選一)", desc: "1. 娛樂體驗流：達令港 SEA LIFE 水族館 + 杜莎夫人蠟像館。<br>2. 悠閒散步流：海德公園北端聖瑪麗大教堂或雪梨塔，把想再去的地方去一次。", mapQuery: "SEA LIFE Sydney Aquarium" },
-                    { time: "18:30", title: "飯店前台拉行李出發", desc: "交通工具：叫兩台 Uber，25 分鐘直達，免走火車站樓梯。", mapQuery: "Sydney Airport" },
-                    { time: "22:10", title: "華航 (CI 52) 起飛返台", desc: "提早 2-3 小時前抵達機場辦理手續與退稅，完美銜接返台班機。", mapQuery: "Sydney Airport" }
+                    { time: "10:00", title: "ibis 辦理退房", desc: "行李免費寄存於飯店前台。", mapQuery: "ibis Styles Sydney Central" },
+                    { time: "11:00", title: "雪梨魚市場", desc: "搭輕軌直達，南半球最大的海鮮市場。建議坐室內避寒風與海鷗。", mapQuery: "Sydney Fish Market" },
+                    { time: "12:00", title: "下午市區漫遊", desc: "海德公園北端聖瑪麗大教堂或雪梨塔。", mapQuery: "Hyde Park Sydney" },
+                    { time: "18:30", title: "前往機場", desc: "叫兩台 Uber，免走火車站樓梯。", mapQuery: "Sydney Airport" },
+                    { time: "22:10", title: "華航起飛返台", desc: "提早辦理手續與退稅。", mapQuery: "Sydney Airport" }
                 ]
             },
-            checklist: { "證件與重要卡片": ["護照與身分證", "澳洲電子簽證 (ETA)", "國際駕照與台灣駕照正本", "每人一張海外信用卡/Apple Pay (搭車用)"], "冬季禦寒 (9~17°C)": ["防風防水保暖外套 (羽絨/風衣)", "保暖三件套 (毛帽、圍巾、手套)", "保溫瓶/保溫杯 (澳洲餐廳僅供冰水)", "高保濕乳液與防曬"], "健康與實用": ["個人常備藥物 (慢性病藥、血壓藥)", "英文處方箋 (海關申報必備)", "健走舒適防滑鞋 (避開新鞋/板鞋)", "澳洲規格八字型三腳轉接頭"] }
+            checklistDeparture: { "證件與重要卡片": ["護照與身分證", "澳洲電子簽證 (ETA)", "國際駕照與台灣駕照正本", "每人一張海外信用卡 (Apple Pay)"], "冬季禦寒 (9~17°C)": ["防風防水保暖外套 (羽絨/風衣)", "保暖三件套 (毛帽、圍巾、手套)", "保溫瓶/保溫杯", "高保濕乳液與防曬"], "健康與實用": ["個人常備藥物 (慢性病藥、血壓藥)", "英文處方箋 (海關申報必備)", "健走舒適防滑鞋", "澳洲規格八字型三腳轉接頭"] },
+            checklistReturn: { "離開飯店掃雷清單": ["護照與隨身小包確實在身上？", "牆上與床頭的「充電頭」拔下了嗎？", "冰箱裡的食物、飲料清空了嗎？", "房間保險箱確認打開淨空？", "房卡/鑰匙是否已全數歸還前台？", "退稅商品與實體發票放在手提行李了嗎？"] }
         };
 
-        // 即時天氣資料預設值 (在抓取成功前顯示)
-        let liveWeather = { temp: "--°C", desc: "資料載入中...", rain: "--%", hourly: [], icon: "cloud-sun" };
+        // 天氣預設 (去除了多餘文字)
+        let liveWeather = { temp: "--", hourly: [], icon: "cloud" };
+        const AUD_RATE = 21.5;
 
         let currentTab = 'itinerary'; 
         let selectedDayId = 'day1'; 
-        let prepTab = 'departure';
+        let prepTab = 'departure'; // 'departure' | 'return'
         let isLargeText = false;
-        let isChartView = true;
+        let isChartView = false; // 預設顯示輸入畫面
 
         function toggleFontSize() { isLargeText = !isLargeText; document.documentElement.classList.toggle('large-text', isLargeText); }
 
@@ -186,68 +171,43 @@
             return [...base, ...custom].sort((a, b) => a.time.localeCompare(b.time));
         }
 
-        // ==========================================
-        // 即時天氣 API 抓取邏輯 (Open-Meteo)
-        // ==========================================
         async function fetchSydneyWeather() {
             try {
-                // 呼叫免金鑰的 Open-Meteo API (目標：雪梨)
                 const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.8688&longitude=151.2093&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode&timezone=Australia%2FSydney&forecast_days=2');
                 const data = await res.json();
-                
                 const current = data.current_weather;
                 const hourly = data.hourly;
                 
-                // 找出目前時間在陣列中的位置
                 const nowStr = current.time; 
                 let currentIndex = hourly.time.findIndex(t => t === nowStr);
                 if (currentIndex === -1) currentIndex = 0;
                 
-                // 抓取未來 5 小時的溫度
                 let nextHours = [];
-                for(let i=1; i<=5; i++) {
+                for(let i=1; i<=4; i++) {
                     if(currentIndex + i < hourly.time.length) {
-                        let timeStr = hourly.time[currentIndex+i].substring(11, 16); 
-                        let temp = Math.round(hourly.temperature_2m[currentIndex+i]) + "°";
-                        nextHours.push(`${timeStr} ${temp}`);
+                        nextHours.push({
+                            time: hourly.time[currentIndex+i].substring(11, 16),
+                            temp: Math.round(hourly.temperature_2m[currentIndex+i]) + "°",
+                            rain: hourly.precipitation_probability[currentIndex+i] + "%"
+                        });
                     }
                 }
 
-                // 將氣象代碼 (WMO) 轉換為我們的圖示與中文描述
                 let code = current.weathercode;
-                let desc = "晴朗";
                 let icon = "sun";
-                let rainProb = hourly.precipitation_probability[currentIndex] + "%";
+                if (code >= 1 && code <= 3) icon = "cloud-sun";
+                else if (code >= 45 && code <= 48) icon = "cloud-fog";
+                else if (code >= 51 && code <= 82) icon = "cloud-rain";
+                else if (code >= 95) icon = "cloud-lightning";
 
-                if (code === 0) { desc = "晴朗"; icon = "sun"; }
-                else if (code === 1 || code === 2 || code === 3) { desc = "多雲"; icon = "cloud-sun"; }
-                else if (code >= 45 && code <= 48) { desc = "有霧"; icon = "cloud-fog"; }
-                else if (code >= 51 && code <= 67) { desc = "雨天"; icon = "cloud-rain"; }
-                else if (code >= 71 && code <= 77) { desc = "下雪"; icon = "snowflake"; }
-                else if (code >= 80 && code <= 82) { desc = "陣雨"; icon = "cloud-rain"; }
-                else if (code >= 95) { desc = "雷雨"; icon = "cloud-lightning"; }
-
-                liveWeather = {
-                    temp: Math.round(current.temperature) + "°C",
-                    desc: desc,
-                    rain: rainProb,
-                    hourly: nextHours,
-                    icon: icon
-                };
-                
-                // 抓取成功後重新渲染畫面
+                liveWeather = { temp: Math.round(current.temperature), hourly: nextHours, icon: icon };
                 if (currentTab === 'itinerary') render(); 
-                
             } catch (e) {
-                console.error("即時天氣抓取失敗", e);
-                // 離線防護機制
-                liveWeather.desc = "離線模式";
-                liveWeather.temp = "--°C";
+                liveWeather.temp = "--";
                 if (currentTab === 'itinerary') render();
             }
         }
 
-        // 渲染畫面邏輯
         function render() {
             const container = document.getElementById('app-content');
             container.innerHTML = '';
@@ -256,22 +216,16 @@
             document.getElementById(`nav-${currentTab}`).classList.add('text-[var(--text-primary)]');
 
             if (currentTab === 'itinerary') {
-                // 將靜態天氣替換為 liveWeather 即時資料
+                // 淨化版氣象卡片
                 let weatherHtml = `
-                    <div class="glass-card px-5 py-4 mb-4 fade-in flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <i data-lucide="${liveWeather.icon}" class="w-[32px] h-[32px] text-gray-500 shrink-0"></i>
-                            <div class="flex items-end gap-3">
-                                <span class="font-bold text-3xl tracking-tight leading-none">${liveWeather.temp}</span>
-                                <div class="flex flex-col pb-0.5">
-                                    <span class="text-[10px] font-bold text-gray-500 tracking-wider">${liveWeather.desc} (雪梨即時)</span>
-                                    <span class="text-[10px] font-bold text-[#007AFF] mt-0.5">降雨機率 ${liveWeather.rain}</span>
-                                </div>
-                            </div>
+                    <div class="glass-card px-6 py-5 mb-5 fade-in flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="${liveWeather.icon}" class="w-[36px] h-[36px] text-gray-700 shrink-0"></i>
+                            <span class="font-bold text-4xl tracking-tighter">${liveWeather.temp}<span class="text-xl">°C</span></span>
                         </div>
-                        <div class="w-px h-8 bg-gray-200 mx-2"></div>
-                        <div class="flex gap-3 overflow-x-auto no-scrollbar text-[10px] font-bold text-gray-400 text-center pl-1">
-                            ${liveWeather.hourly.map(h => { let parts = h.split(" "); return `<div class="shrink-0"><div class="mb-1">${parts[0]}</div><div class="text-[var(--text-primary)]">${parts[1]}</div></div>`; }).join('')}
+                        <div class="w-px h-10 bg-gray-200 mx-1"></div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar text-[10px] font-bold text-gray-500 text-center">
+                            ${liveWeather.hourly.map(h => `<div class="shrink-0 flex flex-col items-center"><span class="mb-1">${h.time}</span><span class="text-[var(--text-primary)] text-[13px] mb-0.5">${h.temp}</span><div class="flex items-center gap-0.5 text-[#007AFF]"><i data-lucide="droplet" class="w-2.5 h-2.5 fill-current"></i>${h.rain}</div></div>`).join('')}
                         </div>
                     </div>
                 `;
@@ -284,29 +238,33 @@
                 dateHtml += `</div>`;
                 
                 const mergedSched = getMergedSchedule(selectedDayId);
-                let scheduleHtml = `<div class="space-y-4 pb-10">`;
-                mergedSched.forEach((item) => {
+                let scheduleHtml = `<div class="space-y-0 pb-10 mt-2">`; // 拿掉原本的 gap
+                
+                mergedSched.forEach((item, index) => {
+                    const isLast = index === mergedSched.length - 1;
                     let mapBtn = item.mapQuery ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center shrink-0 transition-colors shadow-sm"><i data-lucide="navigation" class="w-3.5 h-3.5 text-[var(--text-primary)]"></i></a>` : '';
-                    
-                    let guideHtml = '';
-                    if (item.guide) {
-                        const safeGuide = encodeURIComponent(JSON.stringify(item.guide));
-                        guideHtml = `<button onclick="openModal('global-modal', '${safeGuide}')" class="mt-3.5 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>`;
-                    }
-
+                    let guideHtml = item.guide ? `<button onclick="openModal('global-modal', '${encodeURIComponent(JSON.stringify(item.guide))}')" class="mt-3.5 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>` : '';
                     let restHtml = item.restaurants ? `<div class="mt-4 pt-3 border-t border-gray-100 space-y-3">${item.restaurants.map(r => `<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="text-[13px] font-bold text-[var(--text-primary)]">${r.name}</span><span class="text-[9px] font-bold text-[var(--text-secondary)] bg-[#F0F0F0] px-2 py-0.5 rounded-full">${r.tag}</span></div><span class="text-[11px] font-bold text-gray-500">${r.highlight}</span></div>`).join('')}</div>` : '';
 
+                    // 加入時間線結構
                     scheduleHtml += `
-                        <div class="glass-card p-5 fade-in">
-                            <div class="flex items-start gap-4 mb-1">
-                                <div class="text-[var(--text-primary)] font-bold text-lg tracking-tight">${item.time}</div>
-                                <div class="flex-1 mt-0.5">
-                                    <div class="flex justify-between items-start gap-2 mb-1.5"><h3 class="font-bold text-[16px] text-[var(--text-primary)] leading-snug">${item.title}</h3>${mapBtn}</div>
+                        <div class="flex relative fade-in">
+                            <div class="flex flex-col items-center mr-4">
+                                <div class="w-3 h-3 rounded-full border-2 border-[var(--text-primary)] bg-white z-10 mt-6 shadow-sm"></div>
+                                ${!isLast ? `<div class="w-[1.5px] h-full bg-gray-200 absolute top-8 left-[5px] -z-0"></div>` : ''}
+                            </div>
+                            <div class="flex-1 pb-5">
+                                <div class="glass-card p-5 shadow-sm">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div class="text-[var(--text-primary)] font-bold text-lg tracking-tight mb-2">${item.time}</div>
+                                        ${mapBtn}
+                                    </div>
+                                    <h3 class="font-bold text-[16px] text-[var(--text-primary)] leading-snug mb-1.5">${item.title}</h3>
                                     <p class="text-[13px] font-medium text-[var(--text-secondary)] leading-relaxed">${item.desc}</p>
                                     ${guideHtml}
+                                    ${restHtml}
                                 </div>
                             </div>
-                            ${restHtml}
                         </div>
                     `;
                 });
@@ -341,36 +299,86 @@
                 `;
             }
             else if (currentTab === 'prep') {
-                container.innerHTML = `
-                    <h2 class="text-2xl font-bold tracking-tight mb-5">行前準備與登機</h2>
-                    <div class="fade-in">
-                        <div class="glass-card overflow-hidden mb-6 relative"><div class="absolute top-0 right-0 bg-[var(--text-primary)] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">去程</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI051</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">TPE</div><i data-lucide="plane-takeoff" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">SYD</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between"><span>8月4日 23:30</span><span>10:45 落地 (隔日)</span></div></div></div>
-                        <div class="glass-card overflow-hidden mb-6 relative"><div class="absolute top-0 right-0 bg-gray-300 text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl">回程</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI052</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">SYD</div><i data-lucide="plane-landing" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">TPE</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between"><span>8月10日</span><span>22:10 起飛</span></div></div></div>
-                        <div class="space-y-4 pb-6">${Object.entries(travelData.checklist).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-2 border-b border-gray-100 pb-1">${category}</h3><div class="space-y-3 mt-3">${items.map(item => `<label class="flex items-start gap-3 cursor-pointer group"><div class="w-5 h-5 mt-0.5 rounded border-2 border-gray-300 flex items-center justify-center bg-white"><input type="checkbox" class="opacity-0 absolute"><i data-lucide="check" class="w-3 h-3 text-black scale-0 transition-transform"></i></div><span class="text-[14px] font-medium leading-tight">${item}</span></label>`).join('')}</div></div>`).join('')}</div>
+                const isDep = prepTab === 'departure';
+                
+                // 去/回程切換按鈕
+                let toggleHtml = `
+                    <div class="flex bg-gray-100 p-1 rounded-xl mb-6 shadow-inner">
+                        <button onclick="setPrepTab('departure')" class="flex-1 py-2 text-[13px] font-bold rounded-lg transition-colors ${isDep ? 'bg-white shadow text-black' : 'text-gray-400'}">🛫 去程</button>
+                        <button onclick="setPrepTab('return')" class="flex-1 py-2 text-[13px] font-bold rounded-lg transition-colors ${!isDep ? 'bg-white shadow text-black' : 'text-gray-400'}">🛬 回程</button>
                     </div>
                 `;
-                bindCheckboxes();
+
+                let contentHtml = '';
+                if(isDep) {
+                    contentHtml = `
+                        <div class="glass-card overflow-hidden mb-6 relative fade-in"><div class="absolute top-0 right-0 bg-[#1D1D1F] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">出發</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI051</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">TPE</div><i data-lucide="plane-takeoff" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">SYD</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between text-gray-600"><span>8月4日 23:30</span><span>10:45 落地</span></div></div></div>
+                        
+                        <div class="mb-6 fade-in">
+                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-gray-700"></i>澳洲海關指南</h3>
+                            <div class="space-y-2">
+                                <div class="bg-[#FFF0F0] border border-[#FFE5E5] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FF3B30] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#FF3B30] leading-tight">絕對禁止 (罰款)：<span class="font-medium">肉類製品(含泡麵)、新鮮蔬果、蛋奶製品。</span></p></div>
+                                <div class="bg-[#FFF9E5] border border-[#FFEDB3] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FFCC00] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#B28D00] leading-tight">紅線申報：<span class="font-medium">個人常備藥(需帶英文處方箋)、超過免稅額物品。</span></p></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 pb-6 fade-in">
+                            ${Object.entries(travelData.checklistDeparture).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-gray-200 pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
+                                const isChecked = appData.checkItems[item] ? 'checked' : '';
+                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-gray-300 flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-gray-800 bg-gray-800' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
+                            }).join('')}</div></div>`).join('')}
+                        </div>
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="glass-card overflow-hidden mb-6 relative fade-in"><div class="absolute top-0 right-0 bg-[#A3B18A] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">返家</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI052</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">SYD</div><i data-lucide="plane-landing" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">TPE</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between text-gray-600"><span>8月10日</span><span>22:10 起飛</span></div></div></div>
+                        
+                        <div class="mb-6 fade-in">
+                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-gray-700"></i>TRS 退稅提醒</h3>
+                            <div class="bg-[#F5F5F7] border border-gray-200 p-4 rounded-xl text-[13px] font-medium leading-relaxed text-gray-600">
+                                務必提早 2-3 小時抵達機場。退稅商品需隨身攜帶（除液體類需先給海關查驗蓋章才能托運）。請將<span class="font-bold text-black">實體發票</span>與商品準備好以供查驗。
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 pb-6 fade-in">
+                            ${Object.entries(travelData.checklistReturn).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-gray-200 pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
+                                const isChecked = appData.checkItems[item] ? 'checked' : '';
+                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-gray-300 flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-gray-800 bg-gray-800' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
+                            }).join('')}</div></div>`).join('')}
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `<h2 class="text-2xl font-bold tracking-tight mb-5">行前準備</h2>` + toggleHtml + contentHtml;
             }
             else if (currentTab === 'tools') {
                 const totalExp = appData.expenses.reduce((sum, item) => sum + parseFloat(item.aud), 0);
+                
                 container.innerHTML = `
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold tracking-tight">財務與記帳</h2>
-                        <button onclick="toggleChartView()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5"><i data-lucide="${isChartView ? 'list' : 'pie-chart'}" class="w-3 h-3"></i> ${isChartView ? '切換清單' : '切換圖表'}</button>
+                        <button onclick="toggleChartView()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5"><i data-lucide="${isChartView ? 'plus' : 'pie-chart'}" class="w-3.5 h-3.5"></i> ${isChartView ? '新增記帳' : '總覽圖表'}</button>
                     </div>
-                    ${isChartView ? `
-                        <div class="glass-card p-8 flex flex-col items-center justify-center fade-in bg-white/60 mb-6">
-                            <div class="pie-chart mb-6 shadow-sm border border-gray-200 relative flex items-center justify-center"><div class="w-[90px] h-[90px] bg-[#FCFBF9] rounded-full flex flex-col items-center justify-center"><span class="text-[10px] font-bold text-gray-400 mb-0.5">總花費</span><span class="text-sm font-bold tracking-tight">$${totalExp.toFixed(0)}</span></div></div>
+                    ${!isChartView ? `
+                        <div class="glass-card p-6 fade-in mb-6">
+                            <div class="flex items-center gap-4 mb-2">
+                                <div class="flex-1">
+                                    <label class="text-[10px] font-bold text-[var(--text-secondary)] tracking-wider block mb-1">花費 (AUD)</label>
+                                    <input type="number" id="aud-input" oninput="updateTwdEstimate()" class="w-full border-b border-gray-200 bg-transparent py-1 font-bold text-2xl focus:outline-none" placeholder="0">
+                                </div>
+                            </div>
+                            <div class="text-[11px] font-bold text-gray-400 mb-5 h-4" id="twd-estimate">≈ $0 TWD</div>
+                            <div class="mb-5"><input type="text" id="exp-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold text-[14px] focus:outline-none" placeholder="輸入消費備註..."></div>
+                            <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95">新增記帳</button>
                         </div>
                     ` : `
-                        <div class="glass-card p-5 fade-in mb-6">
-                            <div class="flex items-center gap-4 mb-4"><div class="flex-1"><label class="text-[10px] font-bold text-[var(--text-secondary)] tracking-wider block mb-1">AUD</label><input type="number" id="aud-input" class="w-full border-b border-gray-200 bg-transparent py-1 font-bold text-xl focus:outline-none" placeholder="0"></div></div>
-                            <div class="mb-5"><input type="text" id="exp-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold text-[14px] focus:outline-none" placeholder="輸入消費備註..."></div>
-                            <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3 font-bold text-[14px] shadow-sm transition-transform active:scale-95">新增記帳</button>
+                        <div class="glass-card p-8 flex flex-col items-center justify-center fade-in bg-white/60 mb-6 shadow-sm border border-gray-100">
+                            <div class="pie-chart mb-6 shadow-sm relative flex items-center justify-center"><div class="w-[100px] h-[100px] bg-[#FCFBF9] rounded-full flex flex-col items-center justify-center shadow-inner"><span class="text-[10px] font-bold text-gray-400 mb-0.5">總花費</span><span class="text-lg font-bold tracking-tight">$${totalExp.toFixed(0)}</span></div></div>
+                            <div class="flex gap-4 text-[10px] font-bold text-gray-500"><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#A3B18A]"></div>餐飲</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#798A9C]"></div>交通</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#E0C097]"></div>購物</div></div>
                         </div>
                     `}
                     <div class="space-y-2 fade-in pb-10">
-                        ${appData.expenses.map(exp => `<div class="glass-card px-4 py-3 flex justify-between items-center"><span class="text-[13px] font-bold">${exp.desc}</span><span class="text-[14px] font-bold">$${exp.aud}</span></div>`).join('')}
+                        ${appData.expenses.map(exp => `<div class="glass-card px-4 py-3 flex justify-between items-center shadow-sm"><span class="text-[13px] font-bold text-gray-700">${exp.desc}</span><span class="text-[15px] font-bold">$${exp.aud}</span></div>`).join('')}
                     </div>
                 `;
             }
@@ -380,8 +388,40 @@
         // 互動邏輯
         function switchTab(tabId) { currentTab = tabId; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
         function selectDate(id) { selectedDayId = id; render(); setTimeout(() => { const btn = document.getElementById(`btn-${id}`); if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 50); }
+        function setPrepTab(tab) { prepTab = tab; render(); }
         function toggleChartView() { isChartView = !isChartView; render(); }
         
+        function updateTwdEstimate() {
+            const aud = document.getElementById('aud-input').value;
+            const twdElem = document.getElementById('twd-estimate');
+            if (aud && !isNaN(aud)) {
+                twdElem.innerText = `≈ $${Math.round(aud * AUD_RATE).toLocaleString()} TWD`;
+                twdElem.classList.add('text-gray-600');
+            } else {
+                twdElem.innerText = `≈ $0 TWD`;
+                twdElem.classList.remove('text-gray-600');
+            }
+        }
+
+        function toggleCheck(checkbox, itemName) {
+            const icon = checkbox.nextElementSibling;
+            const text = checkbox.parentElement.nextElementSibling;
+            const box = checkbox.parentElement;
+            
+            appData.checkItems[itemName] = checkbox.checked;
+            saveData();
+
+            if(checkbox.checked) {
+                icon.classList.remove('scale-0');
+                text.classList.add('strikethrough');
+                box.classList.add('border-gray-800', 'bg-gray-800');
+            } else {
+                icon.classList.add('scale-0');
+                text.classList.remove('strikethrough');
+                box.classList.remove('border-gray-800', 'bg-gray-800');
+            }
+        }
+
         function addCustomEvent() {
             const dayId = document.getElementById('add-day').value;
             const time = document.getElementById('add-time').value;
@@ -401,7 +441,9 @@
             const desc = document.getElementById('exp-desc').value;
             if(aud && desc) {
                 appData.expenses.unshift({ aud, desc });
-                saveData(); render();
+                saveData(); 
+                isChartView = true; // 新增完自動跳轉總覽
+                render();
             }
         }
         
@@ -412,10 +454,7 @@
                 
                 let textHtml = '';
                 if(Array.isArray(guide.text)) {
-                    textHtml = guide.text.map(p => {
-                        let formattedP = p.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-[var(--text-primary)]">$1</span>');
-                        return `<p>${formattedP}</p>`;
-                    }).join('');
+                    textHtml = guide.text.map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-[var(--text-primary)]">$1</span>')}</p>`).join('');
                 } else {
                     textHtml = `<p>${guide.text}</p>`;
                 }
@@ -438,9 +477,7 @@
         }
         function openEmergency() { openModal('emergency-modal'); }
 
-        function bindCheckboxes() { setTimeout(() => { document.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.addEventListener('change', function() { const icon = this.nextElementSibling; if(this.checked) icon.classList.remove('scale-0'); else icon.classList.add('scale-0'); }); }); }, 50); }
-
-        // 啟動 App 流程：先渲染預設畫面，同時去抓即時天氣
+        // 啟動 App
         render();
         fetchSydneyWeather();
     </script>
