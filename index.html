@@ -127,10 +127,14 @@
         function toggleFontSize() { isLargeText = !isLargeText; document.documentElement.classList.toggle('large-text', isLargeText); }
 
         // ====== 核心功能：讀取 Google Sheets ======
-        function fetchCloudData() {
-            Papa.parse(GOOGLE_SHEET_CSV_URL, {
-                download: true,
-                header: true,
+// ====== 核心功能：讀取 Google Sheets ======
+function fetchCloudData() {
+    // 💡 秘密武器：加上 "&t=" 與當下時間，強制破解 Google 的 5 分鐘快取延遲！
+    const noCacheUrl = GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime();
+
+    Papa.parse(noCacheUrl, {
+        download: true,
+        header: true,
                 complete: function(results) {
                     const rows = results.data;
                     rows.forEach(row => {
