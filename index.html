@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雪梨行｜極簡旅伴</title>
+    <!-- Tailwind CSS & Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 PapaParse 用來讀取 Google Sheets CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #FCFBF9; --bg-card: rgba(255, 255, 255, 0.85);
+            --text-primary: #1D1D1F; --text-secondary: #86868B; --accent-active: #222222;
+        }
+        html { font-size: 16px; transition: font-size 0.3s ease; scroll-behavior: smooth; }
+        html.large-text { font-size: 19px; }
+        body { font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-body); color: var(--text-primary); }
+        .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden;}
+        .blob-1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, #EAE5DB 0%, rgba(250,246,238,0) 70%); filter: blur(40px); }
+        .blob-2 { position: absolute; bottom: 20%; right: -20%; width: 60vw; height: 60vw; background: radial-gradient(circle, #E0DFDF 0%, rgba(250,246,238,0) 70%); filter: blur(40px); }
+        .glass-panel { background-color: rgba(252, 251, 249, 0.85); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .glass-nav-bottom { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(24px); border-top: 1px solid rgba(0,0,0,0.05); }
+        .glass-card { background-color: var(--bg-card); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); border: 1px solid rgba(255,255,255,0.6); }
+        #global-modal, #loading-screen, #emergency-modal, #whitespace-modal { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(100%); }
+        .modal-open .modal-content { transform: translateY(0); }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pie-chart { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#1D1D1F 0% 50%, #86868B 50% 80%, #E5E5EA 80% 100%); }
+    </style>
+</head>
+<body class="max-w-md mx-auto min-h-screen relative pb-28 overflow-x-hidden">
+
+    <div class="bg-blobs"><div class="blob-1"></div><div class="blob-2"></div></div>
+
+    <!-- 載入畫面 -->
+    <div id="loading-screen" class="fixed inset-0 z-[200] bg-[var(--bg-body)] flex flex-col items-center justify-center">
+        <i data-lucide="loader-2" class="w-8 h-8 text-gray-400 animate-spin mb-4"></i>
+        <p class="text-sm font-bold text-gray-500 tracking-widest">正在從雲端載入最新行程...</p>
+    </div>
+
+    <!-- 頂部 Header -->
+    <header class="sticky top-0 z-40 glass-panel px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="font-bold text-2xl tracking-tight">雪梨漫遊</h1>
+            <p class="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Cloud Sync Enabled</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openEmergency()" class="bg-[#FFF0F0] p-2 rounded-full text-[#FF3B30] hover:bg-[#FFE5E5] transition-colors shadow-sm"><i data-lucide="shield-alert" class="w-[18px] h-[18px]"></i></button>
+            <button onclick="toggleFontSize()" class="bg-[#F7F7F7] px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-gray-200 shadow-sm transition-colors">Aa<span class="text-[10px] ml-0.5 relative -top-0.5">+</span></button>
+        </div>
+    </header>
+
+    <main id="app-content" class="px-5 py-6 min-h-[75vh]"></main>
+
+    <!-- 底部導航列 -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-nav-bottom flex justify-between z-40 px-2 pb-6 pt-3">
+        <button onclick="switchTab('itinerary')" id="nav-itinerary" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-primary)]"><i data-lucide="map" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">行程</span></button>
+        <button onclick="switchTab('explore')" id="nav-explore" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-secondary)]"><i data-lucide="sparkles" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">探索</span></button>
+        <button onclick="switchTab('add')" id="nav-add" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-secondary)]"><i data-lucide="plus-circle" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">新增</span></button>
+        <button onclick="switchTab('prep')" id="nav-prep" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-secondary)]"><i data-lucide="briefcase" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">準備</span></button>
+        <button onclick="switchTab('tools')" id="nav-tools" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-secondary)]"><i data-lucide="calculator" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">記帳</span></button>
+    </nav>
+
+    <!-- 景點故事 Modal -->
+    <div id="global-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
+        <div class="modal-content w-full max-w-md bg-white rounded-t-3xl h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 shrink-0">
+                <h3 id="modal-title" class="font-bold text-lg">景點故事</h3>
+                <button onclick="closeModal('global-modal')" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto no-scrollbar flex-1">
+                <div id="modal-images" class="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory mb-6 pb-2" style="-webkit-overflow-scrolling: touch;"></div>
+                <p id="modal-text" class="text-[15px] leading-relaxed text-gray-700 font-medium pb-10"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 緊急 Modal -->
+    <div id="emergency-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
+        <div class="modal-content w-full max-w-md bg-white rounded-t-3xl pb-10 shadow-2xl">
+            <div class="px-6 py-5 flex justify-between items-center border-b border-gray-100"><div class="flex items-center gap-2 text-[#FF3B30]"><i data-lucide="shield-alert" class="w-5 h-5"></i><h3 class="font-bold text-lg">緊急聯絡指南</h3></div><button onclick="closeModal('emergency-modal')" class="p-2 bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <div class="p-6 space-y-5">
+                <div class="bg-[#FFF8F8] border border-[#FFE5E5] p-4 rounded-2xl"><p class="text-xs text-[#FF3B30] font-bold mb-1">澳洲全境求救電話 (警察/救護/消防)</p><p class="text-4xl font-bold tracking-widest text-[#FF3B30]">000</p></div>
+                <div class="bg-gray-50 border border-gray-200 p-4 rounded-2xl"><p class="text-xs text-gray-500 font-bold mb-1">駐雪梨台北經濟文化辦事處</p><p class="text-xl font-bold tracking-tight">(+61) 2-8224-8188</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 留白空間 Modal -->
+    <div id="whitespace-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
+        <div class="modal-content w-full max-w-md bg-white rounded-t-3xl pb-10 shadow-2xl">
+            <div class="px-6 py-5 flex justify-between items-center border-b border-gray-100"><div class="flex items-center gap-2"><i data-lucide="coffee" class="w-5 h-5 text-gray-600"></i><h3 class="font-bold text-lg">附近的留白空間</h3></div><button onclick="closeModal('whitespace-modal')" class="p-2 bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div class="p-4 border border-gray-200 rounded-2xl flex items-start gap-4"><div class="bg-gray-100 p-3 rounded-full"><i data-lucide="tree-pine" class="w-5 h-5 text-gray-700"></i></div><div><h4 class="font-bold text-[15px] mb-1">寧靜公園長椅</h4><p class="text-[13px] text-gray-500">距離約 200 公尺，提供樹蔭與安靜的座位區。</p></div></div>
+                <div class="p-4 border border-gray-200 rounded-2xl flex items-start gap-4"><div class="bg-gray-100 p-3 rounded-full"><i data-lucide="cup-soda" class="w-5 h-5 text-gray-700"></i></div><div><h4 class="font-bold text-[15px] mb-1">隱密咖啡角落</h4><p class="text-[13px] text-gray-500">距離約 350 公尺，提供舒適沙發與洗手間。</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🚨 步驟三：整合妳的 Google Sheets CSV 網址 🚨
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9-xCiiZoIaZL5_iUPd3zIcLGDYJvI6zNrPVbzXb-u1d8srWUJs7ziRW-V0jApcZykRgWZyknAbs5T/pub?output=csv";
+
+        // 初始化 LocalStorage 資料 (新增行程與記帳功能)
+        let appData = JSON.parse(localStorage.getItem('sydneyApp_v3')) || { customEvents: {}, expenses: [] };
+        function saveData() { localStorage.setItem('sydneyApp_v3', JSON.stringify(appData)); }
+
+        let travelData = { days: [], schedule: {}, weather: {
+            "day1": { temp: "17°C", desc: "多雲時晴", rain: "10%", hourly: ["14:00 16°", "15:00 15°", "16:00 14°", "17:00 12°", "18:00 10°"] },
+            "day2": { temp: "14°C", desc: "藍山偏涼", rain: "20%", hourly: ["08:00 8°", "09:00 9°", "10:00 12°", "11:00 14°", "12:00 14°"] },
+            "day3": { temp: "16°C", desc: "晴朗舒適", rain: "0%", hourly: ["09:00 12°", "10:00 14°", "11:00 15°", "12:00 16°", "13:00 16°"] },
+            "day4": { temp: "15°C", desc: "海風強勁", rain: "5%", hourly: ["15:00 15°", "16:00 14°", "17:00 13°", "18:00 11°", "19:00 10°"] },
+            "day5": { temp: "17°C", desc: "溫暖", rain: "0%", hourly: ["11:00 15°", "12:00 16°", "13:00 17°", "14:00 17°", "15:00 16°"] },
+            "day6": { temp: "16°C", desc: "局部陣雨", rain: "40%", hourly: ["11:00 15°", "12:00 16°", "13:00 16°", "14:00 15°", "15:00 14°"] }
+        }};
+        let currentTab = 'itinerary'; 
+        let selectedDayId = 'day1'; 
+        let prepTab = 'departure';
+        let isLargeText = false;
+        let isChartView = true;
+
+        function toggleFontSize() { isLargeText = !isLargeText; document.documentElement.classList.toggle('large-text', isLargeText); }
+
+        // ====== 核心功能：讀取 Google Sheets ======
+        function fetchCloudData() {
+            Papa.parse(GOOGLE_SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const rows = results.data;
+                    rows.forEach(row => {
+                        if(!row.DayID) return;
+                        if(!travelData.days.find(d => d.id === row.DayID)) {
+                            travelData.days.push({ id: row.DayID, date: row.Date, weekday: row.Weekday });
+                            if(!appData.customEvents[row.DayID]) appData.customEvents[row.DayID] = [];
+                        }
+                        if(!travelData.schedule[row.DayID]) travelData.schedule[row.DayID] = [];
+                        
+                        let event = { time: row.Time, title: row.Title, desc: row.Desc, mapQuery: row.MapQuery };
+                        if(row.GuideTitle && row.GuideText) {
+                            event.guide = { title: row.GuideTitle, text: row.GuideText, images: row.GuideImages ? row.GuideImages.split(',').map(url => url.trim()) : [] };
+                        }
+                        let rests = [];
+                        if(row.Res1Name) rests.push({ name: row.Res1Name, tag: row.Res1Tag, highlight: row.Res1Highlight });
+                        if(rests.length > 0) event.restaurants = rests;
+                        travelData.schedule[row.DayID].push(event);
+                    });
+                    if (travelData.days.length > 0) selectedDayId = travelData.days[0].id;
+                    hideLoading();
+                    render();
+                },
+                error: function(error) {
+                    alert("讀取雲端資料失敗，請重新整理頁面或確認網路連線。");
+                    hideLoading();
+                }
+            });
+        }
+
+        function hideLoading() {
+            const loader = document.getElementById('loading-screen');
+            loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 300);
+        }
+
+        function getMergedSchedule(dayId) {
+            const base = travelData.schedule[dayId] || [];
+            const custom = appData.customEvents[dayId] || [];
+            return [...base, ...custom].sort((a, b) => a.time.localeCompare(b.time));
+        }
+
+        // 渲染畫面邏輯
+        function render() {
+            const container = document.getElementById('app-content');
+            container.innerHTML = '';
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-[var(--text-primary)]'); btn.classList.add('text-[var(--text-secondary)]'); });
+            document.getElementById(`nav-${currentTab}`).classList.add('text-[var(--text-primary)]');
+
+            if (currentTab === 'itinerary') {
+                const weather = travelData.weather[selectedDayId] || { temp: "--°C", desc: "--", rain: "--%", hourly: [] };
+                let weatherHtml = `
+                    <div class="glass-card px-5 py-4 mb-4 fade-in flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="cloud-sun" class="w-[32px] h-[32px] text-gray-500 shrink-0"></i>
+                            <div class="flex items-end gap-3">
+                                <span class="font-bold text-3xl tracking-tight leading-none">${weather.temp}</span>
+                                <div class="flex flex-col pb-0.5">
+                                    <span class="text-[10px] font-bold text-gray-500 tracking-wider">${weather.desc}</span>
+                                    <span class="text-[10px] font-bold text-[#007AFF] mt-0.5">降雨 ${weather.rain}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-px h-8 bg-gray-200 mx-2"></div>
+                        <div class="flex gap-3 overflow-x-auto no-scrollbar text-[10px] font-bold text-gray-400 text-center pl-1">
+                            ${weather.hourly.map(h => { let parts = h.split(" "); return `<div class="shrink-0"><div class="mb-1">${parts[0]}</div><div class="text-[var(--text-primary)]">${parts[1]}</div></div>`; }).join('')}
+                        </div>
+                    </div>
+                `;
+
+                let dateHtml = `<div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 mb-4 px-1 snap-x snap-mandatory">`;
+                travelData.days.forEach(day => {
+                    const isActive = day.id === selectedDayId;
+                    dateHtml += `<button id="btn-${day.id}" onclick="selectDate('${day.id}')" class="snap-center shrink-0 w-[64px] py-2.5 rounded-2xl transition-all flex flex-col items-center justify-center border shadow-sm ${isActive ? 'bg-[var(--accent-active)] border-[var(--accent-active)] text-white' : 'glass-card border-[rgba(0,0,0,0.05)] text-[var(--text-secondary)]'}"><span class="text-[15px] font-bold">${day.date}</span><span class="text-[10px] font-semibold mt-0.5">${day.weekday}</span></button>`;
+                });
+                dateHtml += `</div>`;
+                
+                const mergedSched = getMergedSchedule(selectedDayId);
+                let scheduleHtml = `<div class="space-y-4 pb-10">`;
+                mergedSched.forEach((item) => {
+                    let mapBtn = item.mapQuery ? `<a href="http://googleusercontent.com/maps.google.com/6{encodeURIComponent(item.mapQuery)}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center shrink-0 transition-colors shadow-sm"><i data-lucide="navigation" class="w-3.5 h-3.5 text-[var(--text-primary)]"></i></a>` : '';
+                    let guideHtml = item.guide ? `<button onclick='openModal("global-modal", ${JSON.stringify(item.guide).replace(/'/g, "&apos;")})' class="mt-3.5 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>` : '';
+                    let restHtml = item.restaurants ? `<div class="mt-4 pt-3 border-t border-gray-100 space-y-3">${item.restaurants.map(r => `<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="text-[13px] font-bold text-[var(--text-primary)]">${r.name}</span><span class="text-[9px] font-bold text-[var(--text-secondary)] bg-[#F0F0F0] px-2 py-0.5 rounded-full">${r.tag}</span></div><span class="text-[11px] font-bold text-gray-500">${r.highlight}</span></div>`).join('')}</div>` : '';
+
+                    scheduleHtml += `
+                        <div class="glass-card p-5 fade-in">
+                            <div class="flex items-start gap-4 mb-1">
+                                <div class="text-[var(--text-primary)] font-bold text-lg tracking-tight">${item.time}</div>
+                                <div class="flex-1 mt-0.5">
+                                    <div class="flex justify-between items-start gap-2 mb-1.5"><h3 class="font-bold text-[16px] text-[var(--text-primary)] leading-snug">${item.title}</h3>${mapBtn}</div>
+                                    <p class="text-[13px] font-medium text-[var(--text-secondary)] leading-relaxed">${item.desc}</p>
+                                    ${guideHtml}
+                                </div>
+                            </div>
+                            ${restHtml}
+                        </div>
+                    `;
+                });
+                scheduleHtml += `</div>`;
+                container.innerHTML = weatherHtml + dateHtml + scheduleHtml;
+            } 
+            else if (currentTab === 'explore') {
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold tracking-tight mb-2">周邊探索</h2>
+                    <p class="text-sm text-[var(--text-secondary)] mb-6">依據當日行程，為您預載質感秘境。</p>
+                    <div class="mb-6 fade-in">
+                        <button onclick="openModal('whitespace-modal')" class="w-full bg-[#EAE5DB] text-[#1D1D1F] rounded-2xl p-5 flex flex-col items-center justify-center shadow-sm transition-transform active:scale-95 border border-white">
+                            <i data-lucide="coffee" class="w-6 h-6 mb-2 text-gray-600"></i>
+                            <span class="font-bold text-[15px]">需要喘口氣？</span>
+                            <span class="text-[11px] font-medium text-gray-500 mt-1">為您尋找附近的留白空間與洗手間</span>
+                        </button>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'add') {
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold tracking-tight mb-6">新增行程</h2>
+                    <div class="glass-card p-6 fade-in space-y-5">
+                        <div class="flex gap-4">
+                            <div class="flex-1"><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">日期</label><select id="add-day" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none">${travelData.days.map(d => `<option value="${d.id}">${d.date} ${d.weekday}</option>`).join('')}</select></div>
+                            <div class="w-24"><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">時間</label><input type="time" id="add-time" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" value="15:00"></div>
+                        </div>
+                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">標題</label><input type="text" id="add-title" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" placeholder="例如：喝杯咖啡"></div>
+                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">備註</label><input type="text" id="add-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-medium text-sm focus:outline-none" placeholder="隨手記下筆記..."></div>
+                        <button onclick="addCustomEvent()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95">寫入專屬行程</button>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'prep') {
+                container.innerHTML = `<h2 class="text-2xl font-bold tracking-tight mb-5">行前準備與登機</h2><div class="glass-card p-6 text-center fade-in"><p class="text-sm font-bold text-gray-400">登機證與查核清單可於後續補充</p></div>`;
+            }
+            else if (currentTab === 'tools') {
+                const totalExp = appData.expenses.reduce((sum, item) => sum + parseFloat(item.aud), 0);
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold tracking-tight">財務與記帳</h2>
+                        <button onclick="toggleChartView()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5"><i data-lucide="${isChartView ? 'list' : 'pie-chart'}" class="w-3 h-3"></i> ${isChartView ? '切換清單' : '切換圖表'}</button>
+                    </div>
+                    ${isChartView ? `
+                        <div class="glass-card p-8 flex flex-col items-center justify-center fade-in bg-white/60 mb-6">
+                            <div class="pie-chart mb-6 shadow-sm border border-gray-200 relative flex items-center justify-center"><div class="w-[90px] h-[90px] bg-[#FCFBF9] rounded-full flex flex-col items-center justify-center"><span class="text-[10px] font-bold text-gray-400 mb-0.5">總花費</span><span class="text-sm font-bold tracking-tight">$${totalExp.toFixed(0)}</span></div></div>
+                        </div>
+                    ` : `
+                        <div class="glass-card p-5 fade-in mb-6">
+                            <div class="flex items-center gap-4 mb-4"><div class="flex-1"><label class="text-[10px] font-bold text-[var(--text-secondary)] tracking-wider block mb-1">AUD</label><input type="number" id="aud-input" class="w-full border-b border-gray-200 bg-transparent py-1 font-bold text-xl focus:outline-none" placeholder="0"></div></div>
+                            <div class="mb-5"><input type="text" id="exp-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold text-[14px] focus:outline-none" placeholder="輸入消費備註..."></div>
+                            <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3 font-bold text-[14px] shadow-sm transition-transform active:scale-95">新增記帳</button>
+                        </div>
+                    `}
+                    <div class="space-y-2 fade-in pb-10">
+                        ${appData.expenses.map(exp => `<div class="glass-card px-4 py-3 flex justify-between items-center"><span class="text-[13px] font-bold">${exp.desc}</span><span class="text-[14px] font-bold">$${exp.aud}</span></div>`).join('')}
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        // 互動邏輯
+        function switchTab(tabId) { currentTab = tabId; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function selectDate(id) { selectedDayId = id; render(); setTimeout(() => { const btn = document.getElementById(`btn-${id}`); if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 50); }
+        function toggleChartView() { isChartView = !isChartView; render(); }
+        
+        function addCustomEvent() {
+            const dayId = document.getElementById('add-day').value;
+            const time = document.getElementById('add-time').value;
+            const title = document.getElementById('add-title').value;
+            const desc = document.getElementById('add-desc').value;
+            if(title) {
+                if(!appData.customEvents[dayId]) appData.customEvents[dayId] = [];
+                appData.customEvents[dayId].push({ time, title, desc, mapQuery: title });
+                saveData(); alert('行程已成功寫入！');
+                document.getElementById('add-title').value = ''; document.getElementById('add-desc').value = '';
+                render();
+            }
+        }
+
+        function addExpense() {
+            const aud = document.getElementById('aud-input').value;
+            const desc = document.getElementById('exp-desc').value;
+            if(aud && desc) {
+                appData.expenses.unshift({ aud, desc });
+                saveData(); render();
+            }
+        }
+        
+        function openModal(id, guide) {
+            if(guide) {
+                document.getElementById('modal-title').innerText = guide.title;
+                document.getElementById('modal-text').innerText = guide.text;
+                document.getElementById('modal-images').innerHTML = guide.images.map(url => `<img src="${url}" class="shrink-0 w-[85%] snap-center h-48 object-cover rounded-2xl shadow-sm border border-gray-100" loading="lazy">`).join('');
+            }
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.classList.add('modal-open'); }, 10);
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('modal-open'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+        function openEmergency() { openModal('emergency-modal'); }
+
+        // 啟動 App 時執行抓取
+        fetchCloudData();
+    </script>
+</body>
+</html>
