@@ -27,9 +27,9 @@
         .modal-open .modal-content { transform: translateY(0); }
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 質感大地色系圓餅圖 */
         .pie-chart { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#A3B18A 0% 35%, #798A9C 35% 70%, #E0C097 70% 100%); }
         .strikethrough { text-decoration: line-through; color: #D1D1D6; }
+        .ping-dot { box-shadow: 0 0 0 4px rgba(29, 29, 31, 0.1); }
     </style>
 </head>
 <body class="max-w-md mx-auto min-h-screen relative pb-28 overflow-x-hidden">
@@ -57,6 +57,7 @@
         <button onclick="switchTab('tools')" id="nav-tools" class="nav-btn flex-1 flex flex-col items-center gap-1.5 text-[var(--text-secondary)]"><i data-lucide="calculator" class="w-[22px] h-[22px]"></i><span class="text-[10px] font-semibold tracking-wide">記帳</span></button>
     </nav>
 
+    <!-- 景點故事 Modal -->
     <div id="global-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
         <div class="modal-content w-full max-w-md bg-white rounded-t-3xl h-[85vh] overflow-hidden shadow-2xl flex flex-col">
             <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 shrink-0">
@@ -70,6 +71,7 @@
         </div>
     </div>
 
+    <!-- 緊急 Modal -->
     <div id="emergency-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
         <div class="modal-content w-full max-w-md bg-white rounded-t-3xl pb-10 shadow-2xl">
             <div class="px-6 py-5 flex justify-between items-center border-b border-gray-100"><div class="flex items-center gap-2 text-[#FF3B30]"><i data-lucide="shield-alert" class="w-5 h-5"></i><h3 class="font-bold text-lg">緊急聯絡指南</h3></div><button onclick="closeModal('emergency-modal')" class="p-2 bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -80,6 +82,7 @@
         </div>
     </div>
 
+    <!-- 留白空間 Modal -->
     <div id="whitespace-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
         <div class="modal-content w-full max-w-md bg-white rounded-t-3xl pb-10 shadow-2xl">
             <div class="px-6 py-5 flex justify-between items-center border-b border-gray-100"><div class="flex items-center gap-2"><i data-lucide="coffee" class="w-5 h-5 text-gray-600"></i><h3 class="font-bold text-lg">附近的留白空間</h3></div><button onclick="closeModal('whitespace-modal')" class="p-2 bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -89,11 +92,11 @@
             </div>
         </div>
     </div>
-
+	
     <script>
-        // 初始化 LocalStorage 資料
-        let appData = JSON.parse(localStorage.getItem('sydneyApp_v6')) || { customEvents: {}, expenses: [], checkItems: {} };
-        function saveData() { localStorage.setItem('sydneyApp_v6', JSON.stringify(appData)); }
+        // 初始化 LocalStorage 資料 (更新版本號強制清除舊快取)
+        let appData = JSON.parse(localStorage.getItem('sydneyApp_v8')) || { customEvents: {}, expenses: [], checkItems: {} };
+        function saveData() { localStorage.setItem('sydneyApp_v8', JSON.stringify(appData)); }
 
         const travelData = {
             days: [
@@ -108,13 +111,13 @@
                 "day1": [
                     { time: "10:45", title: "抵達雪梨", desc: "辦理出關後，會合搭乘 Uber 前往 Burwood 住宿點(Airbnb)辦理入住並放置行李。", mapQuery: "Sydney Airport" },
                     { time: "14:00", title: "蔚藍海岸線自駕 (Cape Solander)", desc: "景點特色：8月正值黃金賞鯨季，現場有平坦無障礙木棧道，長輩散步完全不傷膝蓋。<br><br><span class='font-bold text-[#FF3B30]'>請注意：</span>海風刺骨，天黑得早(約17:20日落)，下午3點後氣溫陡降，請注意保暖。", mapQuery: "Cape Solander", 
-                      guide: { title: "植物灣國家公園", text: ["**澳洲近代歷史的起點之一**", "1770年，英國探險家庫克船長率領「奮進號」抵達澳洲東岸，並停靠於此。由於發現大量特有植物，隨行植物學家將此地命名為 Botany Bay（植物灣）。"], images: ["https://images.unsplash.com/photo-1547963388-75c138fbd8f1?w=600&h=400&fit=crop"] } 
+                      guide: { title: "植物灣國家公園", text: ["**澳洲近代歷史的起點之一**", "1770年，英國探險家庫克船長率領「奮進號」抵達澳洲東岸，並停靠於此並為日後殖民與現代澳洲的發展揭開序幕。由於發現大量特有植物，隨行植物學家將此地命名為 Botany Bay（植物灣）。"]} 
                     },
                     { time: "17:30", title: "回到 Burwood 住宿點", desc: "Burwood Chinatown 是一條充滿霓虹燈與紅燈籠的室內外複合式餐飲街。", mapQuery: "Burwood NSW", restaurants: [{ name: "Hansang", tag: "🇰🇷 韓餐", highlight: "Strathfield" }, { name: "Meet Taiwan Café", tag: "🧋 台味", highlight: "回程路過" }] }
                 ],
                 "day2": [
                     { time: "09:00", title: "藍山國家公園 Scenic World", desc: "07:00 提早出發避開人潮。<br><br>景點特色：提供全世界最陡峭的紅底景觀鐵路、高空纜車。完全免爬山即可輕鬆俯瞰著名的三姐妹岩。", mapQuery: "Scenic World Blue Mountains",
-                      guide: { title: "藍山國家公園", text: ["**世界遺產的由來：**", "這裡保存了大片原始桉樹森林。藍山的名字來自桉樹釋放的天然油脂在陽光照射下形成細微霧氣，讓山谷遠看呈現夢幻藍色。"], images: ["https://images.unsplash.com/photo-1533038590840-1cbeaecac34c?w=600&h=400&fit=crop"] }
+                      guide: { title: "藍山國家公園", text: ["**世界遺產的由來：**", "這裡保存了大片原始桉樹森林。藍山的名字來自桉樹釋放的天然油脂在陽光照射下形成細微霧氣，讓山谷遠看呈現夢幻藍色。"] }
                     },
                     { time: "12:30", title: "羅拉小鎮 Leura", desc: "充滿古典風格的精緻山區小鎮，適合悠閒漫步。", mapQuery: "Leura", restaurants: [{ name: "The Yellow Deli", tag: "☕ 午餐", highlight: "輕食咖啡" }, { name: "Josophans", tag: "🍫 甜點", highlight: "松露巧克力" }] },
                     { time: "16:00", title: "DFO Homebush Outlet", desc: "週四 Late Night Shopping，延長營業至晚上 20:00，下午進場能完美避開週末人潮。", mapQuery: "DFO Homebush" },
@@ -124,7 +127,7 @@
                     { time: "08:00", title: "雪梨大學", desc: "Main Quadrangle 沙石城堡主樓是古典哥德式建築，極具哈利波特霍格華茲風格。", mapQuery: "The Main Quadrangle University of Sydney" },
                     { time: "12:00", title: "Newtown", desc: "充滿波西米亞風格與文藝氣息的內城區，保留大量19世紀古老建築與街頭塗鴉。", mapQuery: "Newtown Sydney", restaurants: [{ name: "Thai Pothong", tag: "🇹🇭 泰式", highlight: "人氣午餐" }] },
                     { time: "14:00", title: "麥覺理夫人石椅與歌劇院", desc: "沿著平坦的步道往歌劇院方向悠閒散步，皇家植物園空氣清新，是拍攝家族大合照的絕佳機位。", mapQuery: "Mrs Macquaries Chair",
-                      guide: { title: "麥覺理夫人石椅", text: ["建於1810年，總督夫人伊麗莎白經常來此散步，總督特地命人將天然砂岩雕鑿成座椅。如今是同時欣賞雪梨歌劇院與港灣大橋的最佳機位。"], images: ["https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600&h=400&fit=crop"] }
+                      guide: { title: "麥覺理夫人石椅", text: ["建於1810年，總督夫人伊麗莎白．麥覺理經常來此散步，總督特地命人將天然砂岩雕鑿成座椅，並以夫人名來命名。如今是同時欣賞雪梨歌劇院與港灣大橋的最佳機位。"] }
                     },
                     { time: "18:00", title: "市區晚餐", desc: "唐人街有周五夜市", mapQuery: "Chinatown Sydney" }
                 ],
@@ -132,7 +135,7 @@
                     { time: "10:00", title: "塔龍加動物園 Taronga Zoo", desc: "從大門口入場順著無障礙「下坡步道」一路輕鬆往下走。能以絕美天際線為背景觀賞長頸鹿。", mapQuery: "Taronga Zoo Sydney" },
                     { time: "14:00", title: "搭渡輪回環形碼頭", desc: "逛完動物園後，搭渡輪回環形碼頭，歌劇院附近逛逛。", mapQuery: "Circular Quay" },
                     { time: "17:00", title: "岩石區、巴蘭加魯", desc: "岩石區是雪梨歷史最悠久的街區；巴蘭加魯能體驗現代港區夜景。", mapQuery: "The Rocks", restaurants: [{ name: "The Meat & Wine Co", tag: "🥩 牛排", highlight: "需訂位" }],
-                      guide: { title: "岩石區", text: ["**雪梨的起源地：**", "1788年英國第一艦隊抵達澳洲，最早便是在岩石區登陸定居。早期殖民者用天然砂岩建造房屋，因此被稱為 The Rocks。"], images: ["https://images.unsplash.com/photo-1596700018593-95fae2d0eb51?w=600&h=400&fit=crop"] }
+                      guide: { title: "岩石區", text: ["**現代雪梨的起源地：**", "1788年英國第一艦隊抵達澳洲，最早便是在岩石區登陸定居。早期殖民者用天然砂岩建造房屋，因此被稱為 The Rocks。"] }
                     }
                 ],
                 "day5": [
@@ -153,62 +156,123 @@
             checklistReturn: { "離開飯店掃雷清單": ["護照與隨身小包確實在身上？", "牆上與床頭的「充電頭」拔下了嗎？", "冰箱裡的食物、飲料清空了嗎？", "房間保險箱確認打開淨空？", "房卡/鑰匙是否已全數歸還前台？", "退稅商品與實體發票放在手提行李了嗎？"] }
         };
 
-        // 天氣預設 (去除了多餘文字)
-        let liveWeather = { temp: "--", hourly: [], icon: "cloud" };
+        // 天氣初始狀態
+        let liveWeather = { temp: "--", hourly: [], icon: "cloud", locationName: "定位中..." };
         const AUD_RATE = 21.5;
 
         let currentTab = 'itinerary'; 
         let selectedDayId = 'day1'; 
-        let prepTab = 'departure'; // 'departure' | 'return'
+        let prepTab = 'departure'; 
         let isLargeText = false;
-        let isChartView = false; // 預設顯示輸入畫面
+        let isChartView = false; 
 
         function toggleFontSize() { isLargeText = !isLargeText; document.documentElement.classList.toggle('large-text', isLargeText); }
 
         function getMergedSchedule(dayId) {
-            const base = travelData.schedule[dayId] || [];
-            const custom = appData.customEvents[dayId] || [];
+            const base = (travelData.schedule[dayId] || []).map(e => ({...e, isCustom: false}));
+            const custom = (appData.customEvents[dayId] || []).map((e, idx) => ({...e, isCustom: true, originalIndex: idx}));
             return [...base, ...custom].sort((a, b) => a.time.localeCompare(b.time));
         }
 
-        async function fetchSydneyWeather() {
-            try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.8688&longitude=151.2093&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode&timezone=Australia%2FSydney&forecast_days=2');
-                const data = await res.json();
-                const current = data.current_weather;
-                const hourly = data.hourly;
-                
-                const nowStr = current.time; 
-                let currentIndex = hourly.time.findIndex(t => t === nowStr);
-                if (currentIndex === -1) currentIndex = 0;
-                
-                let nextHours = [];
-                for(let i=1; i<=4; i++) {
-                    if(currentIndex + i < hourly.time.length) {
-                        nextHours.push({
-                            time: hourly.time[currentIndex+i].substring(11, 16),
-                            temp: Math.round(hourly.temperature_2m[currentIndex+i]) + "°",
-                            rain: hourly.precipitation_probability[currentIndex+i] + "%"
-                        });
+        // 隱藏長網址，轉化為「質感膠囊按鈕」
+        function linkify(text) {
+            if(!text) return '';
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" class="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[var(--text-primary)] text-[12px] font-bold rounded-full transition-colors shadow-sm w-fit"><i data-lucide="link-2" class="w-3.5 h-3.5"></i>前往連結</a>`;
+            });
+        }
+
+        // 智慧天氣 API (包含 GPS 抓取與時區自動校正)
+// 智慧天氣 API (包含 GPS 真實地名抓取與 5 小時動態校正)
+        async function fetchSmartWeather() {
+            // 預設雪梨座標 (GPS 失敗時的備案)
+            let lat = -33.8688;
+            let lon = 151.2093;
+            let locationName = "雪梨 (預設)";
+
+            const fetchWeatherAndRender = async () => {
+                try {
+                    // 使用 timezone=auto 確保回傳的預報對齊當地時區
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode&timezone=auto&forecast_days=2`);
+                    const data = await res.json();
+                    
+                    const current = data.current_weather;
+                    const hourly = data.hourly;
+                    
+                    // 以系統當前時間為基準，抓取未來 5 小時資料
+                    const now = new Date();
+                    
+                    // 尋找大於或等於當前時間的第一個預報 index
+                    let currentIndex = hourly.time.findIndex(t => new Date(t) >= now);
+                    if (currentIndex === -1) currentIndex = 0;
+                    
+                    let nextHours = [];
+                    // 抓取包含當下在內的 5 個小時區間
+                    for(let i = 0; i < 5; i++) {
+                        let targetIdx = currentIndex + i;
+                        if(targetIdx < hourly.time.length) {
+                            nextHours.push({
+                                time: hourly.time[targetIdx].substring(11, 16), // 取出 HH:mm
+                                temp: Math.round(hourly.temperature_2m[targetIdx]) + "°",
+                                rain: hourly.precipitation_probability[targetIdx] + "%"
+                            });
+                        }
                     }
+
+                    let code = current.weathercode;
+                    let icon = "sun";
+                    if (code >= 1 && code <= 3) icon = "cloud-sun";
+                    else if (code >= 45 && code <= 48) icon = "cloud-fog";
+                    else if (code >= 51 && code <= 82) icon = "cloud-rain";
+                    else if (code >= 95) icon = "cloud-lightning";
+                    
+                    liveWeather = { 
+                        temp: Math.round(current.temperature), 
+                        hourly: nextHours, 
+                        icon: icon, 
+                        locationName: locationName 
+                    };
+                    if (currentTab === 'itinerary') render();
+                } catch (e) {
+                    console.log("氣象API請求失敗", e);
                 }
+            };
 
-                let code = current.weathercode;
-                let icon = "sun";
-                if (code >= 1 && code <= 3) icon = "cloud-sun";
-                else if (code >= 45 && code <= 48) icon = "cloud-fog";
-                else if (code >= 51 && code <= 82) icon = "cloud-rain";
-                else if (code >= 95) icon = "cloud-lightning";
+            // 免費的逆地理編碼 API，將經緯度轉為真實地名
+            const fetchLocationName = async (latitude, longitude) => {
+                try {
+                    const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=zh`);
+                    const geoData = await geoRes.json();
+                    return geoData.locality || geoData.city || "所在位置";
+                } catch (e) {
+                    return "GPS 即時";
+                }
+            };
 
-                liveWeather = { temp: Math.round(current.temperature), hourly: nextHours, icon: icon };
-                if (currentTab === 'itinerary') render(); 
-            } catch (e) {
-                liveWeather.temp = "--";
-                if (currentTab === 'itinerary') render();
+            // 啟動 GPS 定位
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        lat = position.coords.latitude;
+                        lon = position.coords.longitude;
+                        // 成功取得 GPS 後，轉換地名
+                        locationName = await fetchLocationName(lat, lon);
+                        fetchWeatherAndRender();
+                    },
+                    (error) => {
+                        console.log("GPS 被拒絕或失敗，使用預設", error);
+                        fetchWeatherAndRender();
+                    },
+                    { timeout: 5000 }
+                );
+            } else {
+                fetchWeatherAndRender();
             }
         }
 
-        function render() {
+        // 渲染畫面邏輯
+        function render(autoScroll = false) {
             const container = document.getElementById('app-content');
             container.innerHTML = '';
             
@@ -216,17 +280,64 @@
             document.getElementById(`nav-${currentTab}`).classList.add('text-[var(--text-primary)]');
 
             if (currentTab === 'itinerary') {
-                // 淨化版氣象卡片
+               // 1. 定義當日住宿對應邏輯 (改為直接使用指定的網址)
+                const accommodations = {
+                    'day1': { name: 'Burwood Airbnb', url: 'https://maps.app.goo.gl/UUfwzQJ16hhxDQyx9' },
+                    'day2': { name: 'Burwood Airbnb', url: 'https://maps.app.goo.gl/UUfwzQJ16hhxDQyx9' },
+                    'day3': { name: 'Burwood Airbnb', url: 'https://maps.app.goo.gl/UUfwzQJ16hhxDQyx9' },
+                    'day4': { name: 'Burwood Airbnb', url: 'https://maps.app.goo.gl/UUfwzQJ16hhxDQyx9' },
+                    'day5': { name: 'ibis Styles', url: 'https://maps.app.goo.gl/y7P7TTH6HrYPku4a8' },
+                    'day6': { name: 'ibis Styles', url: 'https://maps.app.goo.gl/y7P7TTH6HrYPku4a8' }
+                };
+                const currentAcc = accommodations[selectedDayId];
+
+                // 2. 取得當前系統時間
+                const nowTime = new Date();
+                const currentTimeStr = nowTime.getHours().toString().padStart(2, '0') + ":" + nowTime.getMinutes().toString().padStart(2, '0');
+
+                // 3. 左右並列的：動態氣象面板 + 住宿導航模組 (極簡留白升級版)
+               // 3. 左右並列的：動態氣象面板 + 住宿導航模組 (單一視覺群組、極簡緊湊版)
                 let weatherHtml = `
-                    <div class="glass-card px-6 py-5 mb-5 fade-in flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="${liveWeather.icon}" class="w-[36px] h-[36px] text-gray-700 shrink-0"></i>
-                            <span class="font-bold text-4xl tracking-tighter">${liveWeather.temp}<span class="text-xl">°C</span></span>
+                    <div class="mb-6 fade-in flex gap-3 mx-1">
+                        <div class="glass-card p-4 flex-1 flex flex-col justify-between shadow-sm border border-[rgba(255,255,255,0.6)]">
+                            
+                            <div class="flex items-center gap-3 mb-3 pl-1">
+                                <i data-lucide="${liveWeather.icon}" class="w-8 h-8 text-[var(--text-primary)] shrink-0"></i>
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-4xl tracking-tighter leading-none">${liveWeather.temp}</span>
+                                        <span class="text-[14px] font-bold text-gray-400 ml-0.5 mt-0.5">°C</span>
+                                    </div>
+                                    
+                                    <div class="w-[1.5px] h-6 bg-[rgba(0,0,0,0.06)] rounded-full"></div>
+                                    
+                                    <div class="flex flex-col justify-center gap-0.5">
+                                        <span class="text-[12px] font-bold text-[var(--text-primary)] leading-none truncate max-w-[75px]">${liveWeather.locationName}</span>
+                                        <span class="text-[10px] font-medium text-[var(--text-secondary)] leading-none">${currentTimeStr}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t border-[rgba(0,0,0,0.05)] flex gap-2 overflow-x-auto no-scrollbar text-[11px] font-bold text-[var(--text-secondary)] justify-between">
+                                ${liveWeather.hourly.map(h => `
+                                    <div class="shrink-0 flex flex-col items-center">
+                                        <span class="mb-1">${h.time}</span>
+                                        <div class="flex items-center gap-0.5 text-[#007AFF]">
+                                            <i data-lucide="droplet" class="w-2 h-2 fill-current"></i>${h.rain}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                        <div class="w-px h-10 bg-gray-200 mx-1"></div>
-                        <div class="flex gap-4 overflow-x-auto no-scrollbar text-[10px] font-bold text-gray-500 text-center">
-                            ${liveWeather.hourly.map(h => `<div class="shrink-0 flex flex-col items-center"><span class="mb-1">${h.time}</span><span class="text-[var(--text-primary)] text-[13px] mb-0.5">${h.temp}</span><div class="flex items-center gap-0.5 text-[#007AFF]"><i data-lucide="droplet" class="w-2.5 h-2.5 fill-current"></i>${h.rain}</div></div>`).join('')}
-                        </div>
+
+                        <a href="${currentAcc.url}" target="_blank" class="glass-card p-3 w-[90px] shrink-0 flex flex-col items-center justify-center text-center hover:bg-[rgba(0,0,0,0.02)] transition-colors active:scale-95 shadow-sm border border-[rgba(255,255,255,0.6)]">
+                            <div class="w-9 h-9 rounded-full bg-[#F5F5F7] flex items-center justify-center mb-2 shadow-inner">
+                                <i data-lucide="bed-double" class="w-4 h-4 text-[var(--text-primary)]"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-[var(--text-secondary)] mb-1">今晚住宿</span>
+                            <span class="text-[11px] font-bold text-[var(--text-primary)] leading-tight line-clamp-2">${currentAcc.name}</span>
+                        </a>
                     </div>
                 `;
 
@@ -238,29 +349,47 @@
                 dateHtml += `</div>`;
                 
                 const mergedSched = getMergedSchedule(selectedDayId);
-                let scheduleHtml = `<div class="space-y-0 pb-10 mt-2">`; // 拿掉原本的 gap
+                
+                // 智慧定位：尋找當前或下一個行程
+                const now = new Date();
+                const currentStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+                let nextEventIndex = mergedSched.findIndex(e => e.time >= currentStr);
+                if (nextEventIndex === -1 && mergedSched.length > 0) nextEventIndex = mergedSched.length - 1; 
+
+                let scheduleHtml = `<div class="space-y-0 pb-10 mt-2">`; 
                 
                 mergedSched.forEach((item, index) => {
                     const isLast = index === mergedSched.length - 1;
+                    const isNext = index === nextEventIndex; 
+                    
                     let mapBtn = item.mapQuery ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center shrink-0 transition-colors shadow-sm"><i data-lucide="navigation" class="w-3.5 h-3.5 text-[var(--text-primary)]"></i></a>` : '';
-                    let guideHtml = item.guide ? `<button onclick="openModal('global-modal', '${encodeURIComponent(JSON.stringify(item.guide))}')" class="mt-3.5 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>` : '';
+                    let deleteBtn = item.isCustom ? `<button onclick="deleteCustomEvent('${selectedDayId}', ${item.originalIndex})" class="w-8 h-8 rounded-full bg-[#FFF0F0] text-[#FF3B30] flex items-center justify-center hover:bg-[#FFE5E5] transition-colors shadow-sm ml-2"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
+                    let guideHtml = item.guide ? `<button onclick="openModal('global-modal', '${encodeURIComponent(JSON.stringify(item.guide))}')" class="mt-3 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>` : '';
                     let restHtml = item.restaurants ? `<div class="mt-4 pt-3 border-t border-gray-100 space-y-3">${item.restaurants.map(r => `<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="text-[13px] font-bold text-[var(--text-primary)]">${r.name}</span><span class="text-[9px] font-bold text-[var(--text-secondary)] bg-[#F0F0F0] px-2 py-0.5 rounded-full">${r.tag}</span></div><span class="text-[11px] font-bold text-gray-500">${r.highlight}</span></div>`).join('')}</div>` : '';
 
-                    // 加入時間線結構
+                    let finalDesc = linkify(item.desc);
+
+                    let dotStyle = isNext ? "w-3.5 h-3.5 rounded-full bg-[var(--text-primary)] ping-dot z-10 mt-6 shadow-sm relative flex items-center justify-center" : "w-3 h-3 rounded-full border-2 border-[var(--text-primary)] bg-white z-10 mt-6 shadow-sm";
+                    let innerPing = isNext ? `<span class="absolute w-full h-full bg-[var(--text-primary)] rounded-full animate-ping opacity-60"></span>` : '';
+                    let cardHighlight = isNext ? "ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-body)]" : "border border-[rgba(255,255,255,0.6)]";
+
                     scheduleHtml += `
-                        <div class="flex relative fade-in">
-                            <div class="flex flex-col items-center mr-4">
-                                <div class="w-3 h-3 rounded-full border-2 border-[var(--text-primary)] bg-white z-10 mt-6 shadow-sm"></div>
-                                ${!isLast ? `<div class="w-[1.5px] h-full bg-gray-200 absolute top-8 left-[5px] -z-0"></div>` : ''}
+                        <div class="flex relative fade-in" id="event-card-${index}">
+                            <div class="flex flex-col items-center mr-4 w-4">
+                                <div class="${dotStyle}">${innerPing}</div>
+                                ${!isLast ? `<div class="w-[1.5px] h-full bg-gray-200 absolute top-8 left-[7px] -z-0"></div>` : ''}
                             </div>
-                            <div class="flex-1 pb-5">
-                                <div class="glass-card p-5 shadow-sm">
+                            <div class="flex-1 pb-5 w-0">
+                                <div class="glass-card p-5 shadow-sm ${cardHighlight} transition-all">
                                     <div class="flex justify-between items-start mb-1">
                                         <div class="text-[var(--text-primary)] font-bold text-lg tracking-tight mb-2">${item.time}</div>
-                                        ${mapBtn}
+                                        <div class="flex">${mapBtn}${deleteBtn}</div>
                                     </div>
-                                    <h3 class="font-bold text-[16px] text-[var(--text-primary)] leading-snug mb-1.5">${item.title}</h3>
-                                    <p class="text-[13px] font-medium text-[var(--text-secondary)] leading-relaxed">${item.desc}</p>
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <h3 class="font-bold text-[16px] text-[var(--text-primary)] leading-snug truncate">${item.title}</h3>
+                                        ${item.isCustom ? `<span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold shrink-0">自訂</span>` : ''}
+                                    </div>
+                                    <p class="text-[13px] font-medium text-[var(--text-secondary)] leading-relaxed flex flex-col">${finalDesc}</p>
                                     ${guideHtml}
                                     ${restHtml}
                                 </div>
@@ -270,11 +399,19 @@
                 });
                 scheduleHtml += `</div>`;
                 container.innerHTML = weatherHtml + dateHtml + scheduleHtml;
+
+                if(autoScroll && nextEventIndex !== -1) {
+                    setTimeout(() => {
+                        const targetCard = document.getElementById(`event-card-${nextEventIndex}`);
+                        if(targetCard) targetCard.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 300);
+                }
+
             } 
             else if (currentTab === 'explore') {
                 container.innerHTML = `
                     <h2 class="text-2xl font-bold tracking-tight mb-2">周邊探索</h2>
-                    <p class="text-sm text-[var(--text-secondary)] mb-6">依據當日行程，為您預載質感秘境。</p>
+                    <p class="text-sm text-[var(--text-secondary)] mb-6">為您預載質感秘境，即將登場。</p>
                     <div class="mb-6 fade-in">
                         <button onclick="openModal('whitespace-modal')" class="w-full bg-[#EAE5DB] text-[#1D1D1F] rounded-2xl p-5 flex flex-col items-center justify-center shadow-sm transition-transform active:scale-95 border border-white">
                             <i data-lucide="coffee" class="w-6 h-6 mb-2 text-gray-600"></i>
@@ -288,20 +425,19 @@
                 container.innerHTML = `
                     <h2 class="text-2xl font-bold tracking-tight mb-6">新增行程</h2>
                     <div class="glass-card p-6 fade-in space-y-5">
-                        <div class="flex gap-4">
-                            <div class="flex-1"><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">日期</label><select id="add-day" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none">${travelData.days.map(d => `<option value="${d.id}">${d.date} ${d.weekday}</option>`).join('')}</select></div>
-                            <div class="w-24"><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">時間</label><input type="time" id="add-time" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" value="15:00"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">日期</label><select id="add-day" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none">${travelData.days.map(d => `<option value="${d.id}">${d.date} ${d.weekday}</option>`).join('')}</select></div>
+                            <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">時間</label><input type="time" id="add-time" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" value="15:00"></div>
                         </div>
                         <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">標題</label><input type="text" id="add-title" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" placeholder="例如：喝杯咖啡"></div>
-                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">備註</label><input type="text" id="add-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-medium text-sm focus:outline-none" placeholder="隨手記下筆記..."></div>
-                        <button onclick="addCustomEvent()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95">寫入專屬行程</button>
+                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">備註與連結</label><textarea id="add-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-medium text-[13px] focus:outline-none resize-none h-16 leading-relaxed" placeholder="貼上網址會自動變成質感按鈕哦..."></textarea></div>
+                        <button onclick="addCustomEvent()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95 flex items-center justify-center gap-2"><i data-lucide="pen-line" class="w-4 h-4"></i>寫入專屬行程</button>
                     </div>
                 `;
             }
             else if (currentTab === 'prep') {
                 const isDep = prepTab === 'departure';
                 
-                // 去/回程切換按鈕
                 let toggleHtml = `
                     <div class="flex bg-gray-100 p-1 rounded-xl mb-6 shadow-inner">
                         <button onclick="setPrepTab('departure')" class="flex-1 py-2 text-[13px] font-bold rounded-lg transition-colors ${isDep ? 'bg-white shadow text-black' : 'text-gray-400'}">🛫 去程</button>
@@ -317,8 +453,8 @@
                         <div class="mb-6 fade-in">
                             <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-gray-700"></i>澳洲海關指南</h3>
                             <div class="space-y-2">
-                                <div class="bg-[#FFF0F0] border border-[#FFE5E5] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FF3B30] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#FF3B30] leading-tight">絕對禁止 (罰款)：<span class="font-medium">肉類製品(含泡麵)、新鮮蔬果、蛋奶製品。</span></p></div>
-                                <div class="bg-[#FFF9E5] border border-[#FFEDB3] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FFCC00] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#B28D00] leading-tight">紅線申報：<span class="font-medium">個人常備藥(需帶英文處方箋)、超過免稅額物品。</span></p></div>
+                                <div class="bg-[#FFF0F0] border border-[#FFE5E5] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FF3B30] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#FF3B30] leading-tight">絕對禁止 (罰款)：<span class="font-medium text-black">肉類製品(含泡麵)、新鮮蔬果、蛋奶製品。</span></p></div>
+                                <div class="bg-[#FFF9E5] border border-[#FFEDB3] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FFCC00] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#B28D00] leading-tight">紅線申報：<span class="font-medium text-black">個人常備藥(需帶英文處方箋)、超過免稅額物品。</span></p></div>
                             </div>
                         </div>
 
@@ -352,54 +488,95 @@
                 container.innerHTML = `<h2 class="text-2xl font-bold tracking-tight mb-5">行前準備</h2>` + toggleHtml + contentHtml;
             }
             else if (currentTab === 'tools') {
-                const totalExp = appData.expenses.reduce((sum, item) => sum + parseFloat(item.aud), 0);
-                
+                const totalAud = appData.expenses.reduce((sum, item) => sum + parseFloat(item.aud), 0);
+                const totalTwd = Math.round(totalAud * AUD_RATE);
+
+                // 將花費紀錄依照日期分組
+                const groupedExp = {};
+                appData.expenses.forEach(exp => {
+                    const d = exp.date || '其他';
+                    if(!groupedExp[d]) groupedExp[d] = [];
+                    groupedExp[d].push(exp);
+                });
+
                 container.innerHTML = `
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold tracking-tight">財務與記帳</h2>
-                        <button onclick="toggleChartView()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5"><i data-lucide="${isChartView ? 'plus' : 'pie-chart'}" class="w-3.5 h-3.5"></i> ${isChartView ? '新增記帳' : '總覽圖表'}</button>
                     </div>
-                    ${!isChartView ? `
-                        <div class="glass-card p-6 fade-in mb-6">
-                            <div class="flex items-center gap-4 mb-2">
-                                <div class="flex-1">
-                                    <label class="text-[10px] font-bold text-[var(--text-secondary)] tracking-wider block mb-1">花費 (AUD)</label>
-                                    <input type="number" id="aud-input" oninput="updateTwdEstimate()" class="w-full border-b border-gray-200 bg-transparent py-1 font-bold text-2xl focus:outline-none" placeholder="0">
+
+                    <div class="glass-card p-6 flex flex-col items-center justify-center fade-in mb-6 shadow-sm">
+                        <div class="pie-chart mb-4 shadow-sm relative flex items-center justify-center">
+                            <div class="w-[100px] h-[100px] bg-[#FCFBF9] rounded-full flex flex-col items-center justify-center shadow-inner">
+                                <span class="text-[10px] font-bold text-gray-400 mb-0.5">總花費 (TWD)</span>
+                                <span class="text-lg font-bold tracking-tight">$${totalTwd.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 text-[10px] font-bold text-gray-500"><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#A3B18A]"></div>餐飲</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#798A9C]"></div>交通</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#E0C097]"></div>購物</div></div>
+                    </div>
+
+                    <div class="glass-card p-6 fade-in mb-6">
+                        <div class="mb-4">
+                            <label class="text-[11px] font-bold text-[var(--text-secondary)] tracking-wider block mb-2">澳幣花費 (AUD)</label>
+                            <div class="flex items-end gap-2 border-b border-gray-200 pb-2">
+                                <span class="text-2xl font-bold text-gray-400 mb-1">$</span>
+                                <input type="number" id="aud-input" oninput="updateTwdEstimate()" class="w-full bg-transparent font-bold text-4xl focus:outline-none text-[var(--text-primary)]" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="mb-6 pl-1">
+                            <div class="text-[28px] font-bold text-gray-300 tracking-tighter" id="twd-estimate">= $0 TWD</div>
+                        </div>
+                        <div class="mb-6"><input type="text" id="exp-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold text-[14px] focus:outline-none" placeholder="輸入消費備註..."></div>
+                        <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95 flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i>完成記帳</button>
+                    </div>
+
+                    <div class="space-y-4 fade-in pb-10">
+                        ${Object.keys(groupedExp).length === 0 ? '<p class="text-center text-[13px] text-gray-400 font-medium mt-4">尚無記帳紀錄</p>' : ''}
+                        ${Object.entries(groupedExp).map(([date, exps]) => `
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-400 mb-2 pl-1">${date}</h3>
+                                <div class="space-y-2">
+                                    ${exps.map(exp => `
+                                        <div class="glass-card px-4 py-3 flex justify-between items-center shadow-sm">
+                                            <span class="text-[13px] font-bold text-[var(--text-primary)]">${exp.desc}</span>
+                                            <div class="text-right">
+                                                <div class="text-[14px] font-bold text-[var(--text-primary)]">$${exp.twd?.toLocaleString() || Math.round(exp.aud * AUD_RATE).toLocaleString()} <span class="text-[10px] text-gray-400 font-medium">TWD</span></div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
                                 </div>
                             </div>
-                            <div class="text-[11px] font-bold text-gray-400 mb-5 h-4" id="twd-estimate">≈ $0 TWD</div>
-                            <div class="mb-5"><input type="text" id="exp-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold text-[14px] focus:outline-none" placeholder="輸入消費備註..."></div>
-                            <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95">新增記帳</button>
-                        </div>
-                    ` : `
-                        <div class="glass-card p-8 flex flex-col items-center justify-center fade-in bg-white/60 mb-6 shadow-sm border border-gray-100">
-                            <div class="pie-chart mb-6 shadow-sm relative flex items-center justify-center"><div class="w-[100px] h-[100px] bg-[#FCFBF9] rounded-full flex flex-col items-center justify-center shadow-inner"><span class="text-[10px] font-bold text-gray-400 mb-0.5">總花費</span><span class="text-lg font-bold tracking-tight">$${totalExp.toFixed(0)}</span></div></div>
-                            <div class="flex gap-4 text-[10px] font-bold text-gray-500"><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#A3B18A]"></div>餐飲</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#798A9C]"></div>交通</div><div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-[#E0C097]"></div>購物</div></div>
-                        </div>
-                    `}
-                    <div class="space-y-2 fade-in pb-10">
-                        ${appData.expenses.map(exp => `<div class="glass-card px-4 py-3 flex justify-between items-center shadow-sm"><span class="text-[13px] font-bold text-gray-700">${exp.desc}</span><span class="text-[15px] font-bold">$${exp.aud}</span></div>`).join('')}
+                        `).join('')}
                     </div>
                 `;
             }
             lucide.createIcons();
         }
 
-        // 互動邏輯
-        function switchTab(tabId) { currentTab = tabId; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        function selectDate(id) { selectedDayId = id; render(); setTimeout(() => { const btn = document.getElementById(`btn-${id}`); if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 50); }
+        function switchTab(tabId) { 
+            currentTab = tabId; 
+            render(tabId === 'itinerary'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+        function selectDate(id) { 
+            selectedDayId = id; 
+            render(true); 
+            setTimeout(() => { const btn = document.getElementById(`btn-${id}`); if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 50); 
+        }
         function setPrepTab(tab) { prepTab = tab; render(); }
         function toggleChartView() { isChartView = !isChartView; render(); }
         
+        // 台幣無動畫瞬間連動，顏色加深
         function updateTwdEstimate() {
             const aud = document.getElementById('aud-input').value;
             const twdElem = document.getElementById('twd-estimate');
-            if (aud && !isNaN(aud)) {
-                twdElem.innerText = `≈ $${Math.round(aud * AUD_RATE).toLocaleString()} TWD`;
-                twdElem.classList.add('text-gray-600');
+            if (aud && !isNaN(aud) && aud > 0) {
+                twdElem.innerText = `= $${Math.round(aud * AUD_RATE).toLocaleString()} TWD`;
+                twdElem.classList.remove('text-gray-300');
+                twdElem.classList.add('text-gray-800');
             } else {
-                twdElem.innerText = `≈ $0 TWD`;
-                twdElem.classList.remove('text-gray-600');
+                twdElem.innerText = `= $0 TWD`;
+                twdElem.classList.remove('text-gray-800');
+                twdElem.classList.add('text-gray-300');
             }
         }
 
@@ -407,18 +584,12 @@
             const icon = checkbox.nextElementSibling;
             const text = checkbox.parentElement.nextElementSibling;
             const box = checkbox.parentElement;
-            
             appData.checkItems[itemName] = checkbox.checked;
             saveData();
-
             if(checkbox.checked) {
-                icon.classList.remove('scale-0');
-                text.classList.add('strikethrough');
-                box.classList.add('border-gray-800', 'bg-gray-800');
+                icon.classList.remove('scale-0'); text.classList.add('strikethrough'); box.classList.add('border-gray-800', 'bg-gray-800');
             } else {
-                icon.classList.add('scale-0');
-                text.classList.remove('strikethrough');
-                box.classList.remove('border-gray-800', 'bg-gray-800');
+                icon.classList.add('scale-0'); text.classList.remove('strikethrough'); box.classList.remove('border-gray-800', 'bg-gray-800');
             }
         }
 
@@ -430,19 +601,31 @@
             if(title) {
                 if(!appData.customEvents[dayId]) appData.customEvents[dayId] = [];
                 appData.customEvents[dayId].push({ time, title, desc, mapQuery: title });
-                saveData(); alert('行程已成功寫入！');
-                document.getElementById('add-title').value = ''; document.getElementById('add-desc').value = '';
-                render();
+                saveData(); 
+                alert('行程已成功寫入！');
+                switchTab('itinerary');
+            }
+        }
+
+        function deleteCustomEvent(dayId, originalIndex) {
+            if (confirm('確定要刪除這個自訂行程嗎？')) {
+                appData.customEvents[dayId].splice(originalIndex, 1);
+                saveData();
+                render(false);
             }
         }
 
         function addExpense() {
-            const aud = document.getElementById('aud-input').value;
+            const aud = parseFloat(document.getElementById('aud-input').value);
             const desc = document.getElementById('exp-desc').value;
             if(aud && desc) {
-                appData.expenses.unshift({ aud, desc });
+                const twd = Math.round(aud * AUD_RATE);
+                const today = new Date();
+                const dateStr = (today.getMonth() + 1) + '/' + today.getDate(); // 產生 "8/5" 格式
+
+                // 新增 twd 與 date 欄位
+                appData.expenses.unshift({ aud, twd, desc, date: dateStr, timestamp: Date.now() });
                 saveData(); 
-                isChartView = true; // 新增完自動跳轉總覽
                 render();
             }
         }
@@ -451,7 +634,6 @@
             if(encodedGuide) {
                 const guide = JSON.parse(decodeURIComponent(encodedGuide));
                 document.getElementById('modal-title').innerText = guide.title;
-                
                 let textHtml = '';
                 if(Array.isArray(guide.text)) {
                     textHtml = guide.text.map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-[var(--text-primary)]">$1</span>')}</p>`).join('');
@@ -459,7 +641,6 @@
                     textHtml = `<p>${guide.text}</p>`;
                 }
                 document.getElementById('modal-text').innerHTML = textHtml;
-
                 if(guide.images && guide.images.length > 0) {
                     document.getElementById('modal-images').innerHTML = guide.images.map(url => `<img src="${url}" class="shrink-0 w-[85%] snap-center h-48 object-cover rounded-2xl shadow-sm border border-gray-100" loading="lazy">`).join('');
                     document.getElementById('modal-images').style.display = 'flex';
@@ -478,8 +659,8 @@
         function openEmergency() { openModal('emergency-modal'); }
 
         // 啟動 App
-        render();
-        fetchSydneyWeather();
+        render(true); 
+        fetchSmartWeather(); // 呼叫具備 GPS 的智慧天氣
     </script>
 </body>
 </html>
