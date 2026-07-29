@@ -3,57 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雪梨行｜極簡旅伴</title>
+    <title>雪梨行｜最佳旅伴資訊</title>
+	<!-- PWA Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Safari 專屬設定 (讓 iPhone 把它當作 App 處理) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="極簡旅伴">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Android / Chrome 主題色 -->
+    <meta name="theme-color" content="#F7F5F0">
+	
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg-body: #FAF8F5; /* 溫潤高級的米白基底 */
-            --bg-card: rgba(255, 255, 255, 0.6); /* 透明度調高，讓毛玻璃更通透 */
-            --text-primary: #1C1C1E; /* 極致深灰黑，確保高對比易讀性 */
-            --text-secondary: #48484A; /* 加深次要文字顏色，符合 WCAG 標準 */
-            --accent-active: #2C2C2E;
-            --border-glass: rgba(255, 255, 255, 0.5); /* 半透明邊框強化玻璃反光感 */
+            /* 溫潤的燕麥拿鐵色系 */
+            --bg-body: #F7F5F0; 
+            --bg-card: rgba(255, 255, 255, 0.75); /* 提高白色的純淨度，讓卡片看起來像精緻的瓷盤 */
+            --text-primary: #2C1E16; /* 深焙咖啡黑，溫暖而深邃 */
+            --text-secondary: #8A7E78; /* 摩卡灰 */
+            --accent-active: #C48B5D; /* 焦糖琥珀色，用於點綴 */
+            --border-glass: rgba(196, 139, 93, 0.15); /* 帶有微微琥珀色的玻璃邊框 */
         }
         
-        /* 基礎字體放大，全面使用 18px (1rem) 起跳 */
-        html { font-size: 18px !important; transition: font-size 0.3s ease; scroll-behavior: smooth; }
-        html.large-text { font-size: 22px !important; }
-        body { font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-body); color: var(--text-primary); }
+        /* 動態字體縮放 */
+        html { font-size: 14px; transition: font-size 0.3s ease; scroll-behavior: smooth; }
+        html.large-text { font-size: 18px; }
+        
+        /* 基礎字體：內文使用易讀的黑體 */
+        body { font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-body); color: var(--text-primary); letter-spacing: 0.02em; }
         .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 使用 100dvh 解決手機瀏覽器滑動時背景跳動的問題 */
-        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1; pointer-events: none; overflow: hidden;}
-        /* 去除人工感的鮮豔漸層，改用柔和的大地中性色暈 */
-        .blob-1 { position: absolute; top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, #E6DED5 0%, rgba(250,248,245,0) 70%); filter: blur(50px); }
-        .blob-2 { position: absolute; bottom: 20%; right: -20%; width: 70vw; height: 70vw; background: radial-gradient(circle, #D8DFE6 0%, rgba(250,248,245,0) 70%); filter: blur(50px); }
-        
-        /* 極致毛玻璃模組：必加 -webkit- 前綴 */
-        .glass-panel { background-color: rgba(250, 248, 245, 0.75); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.04); }
-        .glass-nav-bottom { background-color: rgba(255, 255, 255, 0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-top: 1px solid var(--border-glass); box-shadow: 0 -4px 24px rgba(0,0,0,0.02); }
-        .glass-card { background-color: var(--bg-card); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.04); border: 1px solid var(--border-glass); }
-        
-        #global-modal, #emergency-modal, #whitespace-modal { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(100%); background-color: rgba(255, 255, 255, 0.85); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border-top: 1px solid var(--border-glass);}
-        .modal-open .modal-content { transform: translateY(0); }
-        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .pie-chart { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#A3B18A 0% 35%, #798A9C 35% 70%, #E0C097 70% 100%); }
-        .strikethrough { text-decoration: line-through; color: #D1D1D6; }
-        .ping-dot { box-shadow: 0 0 0 4px rgba(29, 29, 31, 0.1); }
+        /* 【藝術感核心】只針對真正的標題套用宋體，讓所有數字與內文保持統一的黑體 */
+        h1, h2, h3 { 
+            font-family: 'Noto Serif TC', serif !important; 
+            letter-spacing: 0.05em; 
+            font-weight: 600;
+        }
+        }
 
-        /* 【無障礙大字體強制保底】 覆蓋所有原始 Tailwind 的微小字級設定 */
-        [class*="text-[9px]"], [class*="text-[10px]"], [class*="text-[11px]"], 
-        [class*="text-xs"], [class*="text-[12px]"], [class*="text-[13px]"], 
-        [class*="text-sm"], [class*="text-[14px]"], [class*="text-[15px]"] {
-            font-size: 1rem !important; /* 強制保證內文最小為 18px */
-            line-height: 1.6 !important;
+        /* 恢復背景的光暈交融，換上焦糖與暖沙色，模擬拉花或流動光影 */
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1; pointer-events: none; overflow: hidden;}
+        .blob-1 { position: absolute; top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(196, 139, 93, 0.15) 0%, rgba(247,245,240,0) 70%); filter: blur(40px); }
+        .blob-2 { position: absolute; bottom: 20%; right: -20%; width: 70vw; height: 70vw; background: radial-gradient(circle, rgba(138, 126, 120, 0.1) 0%, rgba(247,245,240,0) 70%); filter: blur(40px); }
+        
+        /* 極致毛玻璃 + 圓角恢復 */
+        .glass-panel { background-color: rgba(247, 245, 240, 0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass); }
+        .glass-nav-bottom { background-color: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-top: 1px solid var(--border-glass); box-shadow: 0 -4px 24px rgba(44, 30, 22, 0.04); }
+        
+        /* 卡片恢復 Tailwind 預設的圓角，但加入高級的柔和陰影 */
+        .glass-card { 
+            background-color: var(--bg-card); 
+            -webkit-backdrop-filter: blur(16px); 
+            backdrop-filter: blur(16px); 
+            box-shadow: 0 8px 32px rgba(44, 30, 22, 0.03); 
+            border: 1px solid var(--border-glass); 
         }
-        [class*="text-[16px]"], .text-base {
-            font-size: 1.125rem !important; /* 相當於 20px，拉開主次資訊的層次 */
-            line-height: 1.6 !important;
-        }
+        
+        /* Modal 彈出視窗設計 */
+        #global-modal, #emergency-modal, #whitespace-modal { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.16, 1, 0
     </style>
 </head>
 <body class="max-w-md mx-auto min-h-screen relative pb-28 overflow-x-hidden">
@@ -63,7 +76,7 @@
     <header class="sticky top-0 z-40 glass-panel px-6 py-4 flex justify-between items-center">
         <div>
             <h1 class="font-bold text-2xl tracking-tight">雪梨漫遊</h1>
-            <p class="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Aug 05 - Aug 10, 2026</p>
+            <p class="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Aug 05 - Aug 10</p>
         </div>
         <div class="flex items-center gap-2">
             <button onclick="openEmergency()" class="bg-[#FFF0F0] p-2 rounded-full text-[#FF3B30] hover:bg-[#FFE5E5] transition-colors shadow-sm"><i data-lucide="shield-alert" class="w-[18px] h-[18px]"></i></button>
@@ -82,15 +95,15 @@
     </nav>
 
     <!-- 景點故事 Modal -->
-    <div id="global-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-end justify-center">
-        <div class="modal-content w-full max-w-md bg-white rounded-t-3xl h-[85vh] overflow-hidden shadow-2xl flex flex-col">
-            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 shrink-0">
-                <h3 id="modal-title" class="font-bold text-lg">景點故事</h3>
-                <button onclick="closeModal('global-modal')" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div id="global-modal" class="fixed inset-0 z-[100] bg-black/60 hidden opacity-0 flex items-center justify-center p-4">
+        <div class="modal-content w-full max-w-md bg-white rounded-2xl max-h-[80vh] overflow-hidden shadow-2xl flex flex-col">
+            <div class="px-5 py-4 flex justify-between items-center border-b border-gray-100 shrink-0">
+                <h3 id="modal-title" class="font-bold text-lg tracking-tight">景點故事</h3>
+                <button onclick="closeModal('global-modal')" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto no-scrollbar flex-1">
-                <div id="modal-images" class="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory mb-6 pb-2" style="-webkit-overflow-scrolling: touch;"></div>
-                <div id="modal-text" class="text-[15px] leading-relaxed text-gray-700 font-medium pb-10 space-y-3"></div>
+            <div class="p-5 overflow-y-auto no-scrollbar shrink">
+                <div id="modal-images" class="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory mb-4 pb-2" style="-webkit-overflow-scrolling: touch;"></div>
+                <div id="modal-text" class="text-[14px] leading-relaxed text-gray-700 font-medium pb-2 space-y-3"></div>
             </div>
         </div>
     </div>
@@ -118,7 +131,76 @@
     </div>
 	
     <script>
+	// 放在 script 的最上方
+    function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+	
         // 初始化 LocalStorage 資料 (更新版本號強制清除舊快取)
+// ======= 探索頁面狀態 =======
+    let exploreState = 'idle'; 
+    let selectedExploreCategory = '全部';
+    let explorePlacesData = []; // 改為空陣列，等待動態載入
+    let isExploreDataLoaded = false; // 標記是否已經載入過
+
+// 未來你的 GitHub JSON 網址放這裡
+    const EXPLORE_JSON_URL = 'https://raw.githubusercontent.com/你的帳號/你的專案/main/sydney_places.json';
+
+// 非同步讀取 JSON 資料
+    async function loadExploreData() {
+    if (isExploreDataLoaded) return;
+    try {
+        const response = await fetch(EXPLORE_JSON_URL);
+        if (!response.ok) throw new Error('Network response was not ok');
+        explorePlacesData = await response.json();
+        isExploreDataLoaded = true;
+    } catch (error) {
+        console.log("讀取外部 JSON 失敗，暫時使用本地備用資料", error);
+        // 若 GitHub 還沒設定好，自動使用你原本的 80 幾筆資料作為 fallback
+        explorePlacesData = getFallbackExploreData(); 
+        isExploreDataLoaded = true;
+    }
+    }
+
+// 修改狀態切換函數，加入 Loading 邏輯
+    async function setExploreMode(mode) {
+    exploreState = mode;
+    
+    // 如果是第一次啟動雷達或查看全部，先顯示 Loading 並去抓資料
+    if (mode !== 'idle' && !isExploreDataLoaded) {
+        const container = document.getElementById('app-content');
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[50vh] text-[var(--text-secondary)] fade-in">
+                <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-4 text-[var(--accent-active)]"></i>
+                <p class="font-bold text-[14px]">正在載入雪梨景點資料...</p>
+            </div>
+        `;
+        lucide.createIcons();
+        await loadExploreData(); // 等待資料抓取
+    }
+    
+    render();
+    }
+
+    function setExploreCategory(cat) {
+    selectedExploreCategory = cat;
+    render();
+    }
+
+// 將你原本的陣列包裝成 fallback 函數 (為了排版簡潔，我省略中間內容，請將你完整的 80 筆物件貼在裡面)
+    function getFallbackExploreData() {
+    return [
+        { "name": "Cow & The Moon", "url": "...", "category": "正餐", "is_vegetarian": true, "specialty": "Mandorla Affogato", "rating": 4.6, "lat": -33.8989113, "lng": 151.1720116 },
+        { "name": "雪梨歌劇院", "url": "...", "category": "景點", "is_vegetarian": false, "specialty": "世界文化遺產與地標建築", "rating": 4.9, "lat": -33.8567844, "lng": 151.2152967 }
+        // ... 中間請貼上你原本完整的資料 ...
+    ];
+    }
         let appData = JSON.parse(localStorage.getItem('sydneyApp_v8')) || { customEvents: {}, expenses: [], checkItems: {} };
         function saveData() { localStorage.setItem('sydneyApp_v8', JSON.stringify(appData)); }
 
@@ -133,47 +215,49 @@
             ],
             schedule: {
                 "day1": [
-                    { time: "10:45", title: "抵達雪梨", desc: "辦理出關後，會合搭乘 Uber 前往 Burwood 住宿點(Airbnb)辦理入住並放置行李。", mapQuery: "Sydney Airport" },
-                    { time: "14:00", title: "蔚藍海岸線自駕 (Cape Solander)", desc: "景點特色：8月正值黃金賞鯨季，現場有平坦無障礙木棧道，長輩散步完全不傷膝蓋。<br><br><span class='font-bold text-[#FF3B30]'>請注意：</span>海風刺骨，天黑得早(約17:20日落)，下午3點後氣溫陡降，請注意保暖。", mapQuery: "Cape Solander", 
+                    { time: "10:45", title: "抵達雪梨", desc: "辦理出關後，會合搭乘 Uber 前往 Burwood 住宿點(Airbnb)辦理入住並放置行李。<br><br>📍 地址：54 Park Rd, Burwood NSW 2134", mapQuery: "54 Park Rd, Burwood NSW 2134" },
+                    { time: "14:00", title: "植物灣國家公園 Cape Solander", desc: "景點特色：8月正值黃金賞鯨季，現場有平坦無障礙木棧道，長輩散步完全不傷膝蓋。<br><br><span class='font-bold text-[#FF3B30]'>請注意：</span>海風刺骨，天黑得早(約17:20日落)，下午3點後氣溫陡降，請注意保暖。", mapQuery: "Cape Solander", 
                       guide: { title: "植物灣國家公園", text: ["**澳洲近代歷史的起點之一**", "1770年，英國探險家庫克船長率領「奮進號」抵達澳洲東岸，並停靠於此並為日後殖民與現代澳洲的發展揭開序幕。由於發現大量特有植物，隨行植物學家將此地命名為 Botany Bay（植物灣）。"]} 
                     },
                     { time: "17:30", title: "回到 Burwood 住宿點", desc: "Burwood Chinatown 是一條充滿霓虹燈與紅燈籠的室內外複合式餐飲街。", mapQuery: "Burwood NSW", restaurants: [{ name: "Hansang", tag: "🇰🇷 韓餐", highlight: "Strathfield" }, { name: "Meet Taiwan Café", tag: "🧋 台味", highlight: "回程路過" }] }
                 ],
                 "day2": [
-                    { time: "09:00", title: "藍山國家公園 Scenic World", desc: "07:00 提早出發避開人潮。<br><br>景點特色：提供全世界最陡峭的紅底景觀鐵路、高空纜車。完全免爬山即可輕鬆俯瞰著名的三姐妹岩。", mapQuery: "Scenic World Blue Mountains",
+                    { time: "07:00", title: "出發藍山公園", desc: "提早出發避開人潮。<br><br>景點特色：提供全世界最陡峭的紅底景觀鐵路、高空纜車。完全免爬山即可輕鬆俯瞰著名的三姐妹岩。", mapQuery: "Scenic World Blue Mountains",
                       guide: { title: "藍山國家公園", text: ["**世界遺產的由來：**", "這裡保存了大片原始桉樹森林。藍山的名字來自桉樹釋放的天然油脂在陽光照射下形成細微霧氣，讓山谷遠看呈現夢幻藍色。"] }
                     },
-                    { time: "12:30", title: "羅拉小鎮 Leura", desc: "充滿古典風格的精緻山區小鎮，適合悠閒漫步。", mapQuery: "Leura", restaurants: [{ name: "The Yellow Deli", tag: "☕ 午餐", highlight: "輕食咖啡" }, { name: "Josophans", tag: "🍫 甜點", highlight: "松露巧克力" }] },
-                    { time: "16:00", title: "DFO Homebush Outlet", desc: "週四 Late Night Shopping，延長營業至晚上 20:00，下午進場能完美避開週末人潮。", mapQuery: "DFO Homebush" },
-                    { time: "20:00", title: "回到住宿點", desc: "晚餐建議：DFO 內美食街，或回 Burwood 享用熱炒。", mapQuery: "Burwood", restaurants: [{ name: "陳師傅東北菜", tag: "🥢 中式", highlight: "熱炒" }] }
+                    { time: "12:30", title: "蘿拉小鎮 Leura", desc: "充滿古典風格的精緻山區小鎮，適合悠閒漫步。", mapQuery: "Leura", restaurants: [{ name: "The Yellow Deli", tag: "☕ 午餐", highlight: "輕食咖啡" }, { name: "Josophans", tag: "🍫 甜點", highlight: "松露巧克力" }] },
+                    { time: "14:00", title: "DFO Homebush Outlet", desc: "雪梨最大且最著名的Outlet", mapQuery: "DFO Homebush" },
+                    { time: "20:00", title: "回到 Burwood 住宿點", desc: "晚餐建議：DFO 內美食街，或回 Burwood 享用熱炒。", mapQuery: "Burwood", restaurants: [{ name: "陳師傅東北菜", tag: "🥢 中式", highlight: "熱炒" }] }
                 ],
                 "day3": [
-                    { time: "08:00", title: "雪梨大學", desc: "Main Quadrangle 沙石城堡主樓是古典哥德式建築，極具哈利波特霍格華茲風格。", mapQuery: "The Main Quadrangle University of Sydney" },
+                    { time: "08:00", title: "搭車前往雪梨大學", desc: "Main Quadrangle 沙石城堡主樓是古典哥德式建築，極具哈利波特霍格華茲風格。", mapQuery: "The Main Quadrangle University of Sydney" },
+                    { time: "11:45", title: "前往還車 (SIXT Mascot 店)", desc: "預備前往機場附近的 SIXT 還車。請注意：不需要大家去。", mapQuery: "SIXT Car Hire - Sydney Airport Mascot" },
                     { time: "12:00", title: "Newtown", desc: "充滿波西米亞風格與文藝氣息的內城區，保留大量19世紀古老建築與街頭塗鴉。", mapQuery: "Newtown Sydney", restaurants: [{ name: "Thai Pothong", tag: "🇹🇭 泰式", highlight: "人氣午餐" }] },
-                    { time: "14:00", title: "麥覺理夫人石椅與歌劇院", desc: "沿著平坦的步道往歌劇院方向悠閒散步，皇家植物園空氣清新，是拍攝家族大合照的絕佳機位。", mapQuery: "Mrs Macquaries Chair",
+                    { time: "14:00", title: "市區巡禮~歌劇院", desc: "沿著平坦的步道往歌劇院方向悠閒散步，是拍攝家族大合照的絕佳機位。", mapQuery: "Sydney Opera House" },
+                    { time: "17:00", title: "麥覺理夫人石椅", desc: "同時欣賞雪梨歌劇院與港灣大橋的最佳機位。", mapQuery: "Mrs Macquaries Chair",
                       guide: { title: "麥覺理夫人石椅", text: ["建於1810年，總督夫人伊麗莎白．麥覺理經常來此散步，總督特地命人將天然砂岩雕鑿成座椅，並以夫人名來命名。如今是同時欣賞雪梨歌劇院與港灣大橋的最佳機位。"] }
-                    },
-                    { time: "18:00", title: "市區晚餐", desc: "唐人街有周五夜市", mapQuery: "Chinatown Sydney" }
-                ],
-                "day4": [
-                    { time: "10:00", title: "塔龍加動物園 Taronga Zoo", desc: "從大門口入場順著無障礙「下坡步道」一路輕鬆往下走。能以絕美天際線為背景觀賞長頸鹿。", mapQuery: "Taronga Zoo Sydney" },
-                    { time: "14:00", title: "搭渡輪回環形碼頭", desc: "逛完動物園後，搭渡輪回環形碼頭，歌劇院附近逛逛。", mapQuery: "Circular Quay" },
-                    { time: "17:00", title: "岩石區、巴蘭加魯", desc: "岩石區是雪梨歷史最悠久的街區；巴蘭加魯能體驗現代港區夜景。", mapQuery: "The Rocks", restaurants: [{ name: "The Meat & Wine Co", tag: "🥩 牛排", highlight: "需訂位" }],
-                      guide: { title: "岩石區", text: ["**現代雪梨的起源地：**", "1788年英國第一艦隊抵達澳洲，最早便是在岩石區登陸定居。早期殖民者用天然砂岩建造房屋，因此被稱為 The Rocks。"] }
                     }
                 ],
+                "day4": [
+                    { time: "08:30", title: "搭火車與公車前往動物園", desc: "從 Burwood 搭火車至 Wynyard，再轉乘公車 100 號到動物園。", mapQuery: "Wynyard Station Sydney" },
+                    { time: "10:00", title: "塔龍加動物園 Taronga Zoo", desc: "從大門口入場順著無障礙「下坡步道」一路輕鬆往下走。能以絕美天際線為背景觀賞長頸鹿。", mapQuery: "Taronga Zoo Sydney" },
+                    { time: "14:00", title: "搭渡輪回環形碼頭", desc: "逛完動物園後，搭渡輪回環形碼頭；在歌劇院附近與 Barangaroo 逛逛。", mapQuery: "Circular Quay" },
+                    { time: "16:00", title: "岩石區 The Rocks", desc: "岩石區是雪梨歷史最悠久的街區；巴蘭加魯能體驗現代港區夜景。", mapQuery: "The Rocks", restaurants: [{ name: "The Meat & Wine Co", tag: "🥩 牛排", highlight: "需訂位" }],
+                      guide: { title: "岩石區", text: ["**現代雪梨的起源地：**", "1788年英國第一艦隊抵達澳洲，最早便是在岩石區登陸定居。早期殖民者用天然砂岩建造房屋，因此被稱為 The Rocks。"] }
+                    },
+                    { time: "18:00", title: "晚餐", desc: "於市區享用晚餐。", mapQuery: "Sokyo sydney" }
+                ],
                 "day5": [
-                    { time: "09:00", title: "市區飯店", desc: "ibis Styles Sydney Central。先到飯店寄放行李，全程空手輕鬆活動。", mapQuery: "ibis Styles Sydney Central" },
+                    { time: "09:00", title: "ibis Styles Sydney Central", desc: "先到飯店辦理寄放行李，全程空手輕鬆活動。", mapQuery: "ibis Styles Sydney Central" },
                     { time: "10:00", title: "新南威爾斯畫廊", desc: "分為古典優雅的老館與現代前衛的新館，兩館相互輝映，免費入場。", mapQuery: "Art Gallery of New South Wales" },
-                    { time: "14:00", title: "市區自由活動", desc: "1. Paddy’s Markets：室內傳統大棚市集。<br>2. QVB：世界最美的購物中心之一，擁有拜占庭式建築。", mapQuery: "Queen Victoria Building" },
-                    { time: "18:00", title: "唐人街+達令港夜景", desc: "達令港是雪梨最知名的濱水休閒區。", mapQuery: "Darling Harbour", restaurants: [{ name: "鼎泰豐 / 小龍坎", tag: "🥢 亞洲", highlight: "World Square" }] }
+                    { time: "12:00", title: "午餐", desc: "自由安排午餐時間。", mapQuery: "Sydney CBD" },
+                    { time: "14:00", title: "市集 / QVB", desc: "1. Paddy’s Markets：室內傳統大棚市集。<br>2. QVB：世界最美的購物中心之一，擁有拜占庭式建築。", mapQuery: "Queen Victoria Building" }
                 ],
                 "day6": [
-                    { time: "10:00", title: "ibis 辦理退房", desc: "行李免費寄存於飯店前台。", mapQuery: "ibis Styles Sydney Central" },
-                    { time: "11:00", title: "雪梨魚市場", desc: "搭輕軌直達，南半球最大的海鮮市場。建議坐室內避寒風與海鷗。", mapQuery: "Sydney Fish Market" },
-                    { time: "12:00", title: "下午市區漫遊", desc: "海德公園北端聖瑪麗大教堂或雪梨塔。", mapQuery: "Hyde Park Sydney" },
-                    { time: "18:30", title: "前往機場", desc: "叫兩台 Uber，免走火車站樓梯。", mapQuery: "Sydney Airport" },
-                    { time: "22:10", title: "華航起飛返台", desc: "提早辦理手續與退稅。", mapQuery: "Sydney Airport" }
+                    { time: "10:00", title: "ibis 辦理退房與寄放行李", desc: "吃完早餐後行李免費寄存於飯店前台。", mapQuery: "ibis Styles Sydney Central" },
+                    { time: "12:00", title: "下午市區漫游", desc: "海德公園北端聖瑪麗大教堂或雪梨塔。", mapQuery: "Hyde Park Sydney" },
+                    { time: "18:30", title: "前往機場", desc: "飯店前台拉行李出發機場。叫兩台 Uber，免走火車站樓梯。", mapQuery: "Sydney Airport" },
+                    { time: "22:10", title: "華航 (CI 52) 起飛返台", desc: "提早辦理手續與退稅。", mapQuery: "Sydney Airport" }
                 ]
             },
             checklistDeparture: { "證件與重要卡片": ["護照與身分證", "澳洲電子簽證 (ETA)", "國際駕照與台灣駕照正本", "每人一張海外信用卡 (Apple Pay)"], "冬季禦寒 (9~17°C)": ["防風防水保暖外套 (羽絨/風衣)", "保暖三件套 (毛帽、圍巾、手套)", "保溫瓶/保溫杯", "高保濕乳液與防曬"], "健康與實用": ["個人常備藥物 (慢性病藥、血壓藥)", "英文處方箋 (海關申報必備)", "健走舒適防滑鞋", "澳洲規格八字型三腳轉接頭"] },
@@ -190,9 +274,76 @@
         let isLargeText = false;
         let isChartView = false; 
 		
+		// ======= 記帳升級：分類狀態與專屬色系 =======
+        let selectedCategory = '餐飲'; // 預設選擇餐飲
+        const categoryColors = {
+            '餐飲': '#C48B5D', // 焦糖琥珀
+            '交通': '#8A7E78', // 摩卡灰
+            '購物': '#D4C4B7', // 暖沙色
+            '伴手禮': '#A9B5A2', // 鼠尾草綠
+            '其他': '#E5E5EA'  // 相容舊資料的預設色
+        };
+
+        function selectCategory(cat) {
+          selectedCategory = cat; // 記錄目前選了誰
+    
+        // 精準修改 DOM，不要重新 render() 整個頁面
+          document.querySelectorAll('.cat-btn').forEach(btn => {
+            if (btn.dataset.cat === cat) {
+            // 被選中的樣式
+            btn.className = 'cat-btn flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95 bg-[var(--text-primary)] text-white shadow-md scale-[1.02]';
+            } else {
+            // 沒被選中的樣式
+            btn.className = 'cat-btn flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95 bg-transparent border border-[var(--border-glass)] text-[var(--text-secondary)]';
+            }
+          });
+        }
+		
+		// ======= 記帳升級：批次管理與一鍵清空 =======
+        let isExpenseEditMode = false;
+		let editingExpenseId = null; // 用來追蹤編輯狀態
+        let selectedExpenses = new Set();
+
+        function toggleExpenseEditMode() {
+            isExpenseEditMode = !isExpenseEditMode;
+            selectedExpenses.clear(); // 進入/退出時清空已選項目
+            render();
+        }
+
+        function toggleExpenseSelection(timestamp) {
+            if (selectedExpenses.has(timestamp)) {
+                selectedExpenses.delete(timestamp);
+            } else {
+                selectedExpenses.add(timestamp);
+            }
+            render();
+        }
+
+        function deleteSelectedExpenses() {
+            if (selectedExpenses.size === 0) {
+                alert('請先點選要刪除的項目');
+                return;
+            }
+            if (confirm(`確定要刪除選取的 ${selectedExpenses.size} 筆紀錄嗎？`)) {
+                appData.expenses = appData.expenses.filter(exp => !selectedExpenses.has(exp.timestamp));
+                saveData();
+                toggleExpenseEditMode(); // 刪除後自動退出管理模式
+            }
+        }
+
+        function clearAllExpenses() {
+            if (confirm('⚠️ 警告：確定要「一鍵清空」所有記帳紀錄嗎？此動作無法復原！')) {
+                appData.expenses = [];
+                saveData();
+                isExpenseEditMode = false;
+                selectedExpenses.clear();
+                render();
+            }
+        }
+		
 		// ======= 記帳升級：刪除特定花費 =======
         function deleteExpense(timestamp) {
-            if (confirm('確定要刪除這筆花費嗎？總金額將會即時重新計算。')) {
+            if (confirm('確定要刪除這筆花費嗎？總金額將會重新計算')) {
                 // 透過過濾掉該筆 timestamp，達成刪除效果
                 appData.expenses = appData.expenses.filter(exp => exp.timestamp !== timestamp);
                 saveData(); // 儲存變更至 LocalStorage
@@ -227,44 +378,45 @@
 
             const fetchWeatherAndRender = async () => {
                 try {
-                    // 使用 timezone=auto 確保回傳的預報對齊當地時區
                     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode&timezone=auto&forecast_days=2`);
                     const data = await res.json();
                     
                     const current = data.current_weather;
                     const hourly = data.hourly;
-                    
-                    // 以系統當前時間為基準，抓取未來 5 小時資料
                     const now = new Date();
                     
-                    // 尋找大於或等於當前時間的第一個預報 index
                     let currentIndex = hourly.time.findIndex(t => new Date(t) >= now);
                     if (currentIndex === -1) currentIndex = 0;
                     
+                    // 新增一個小助手，用來把 API 數字轉換成圖示
+                    const getIconByCode = (code) => {
+                      if (code >= 1 && code <= 3) return "cloud-sun";
+                      if (code >= 45 && code <= 48) return "cloud-fog";
+                      if (code >= 51 && code <= 82) return "cloud-rain";
+                      if (code >= 95) return "cloud-lightning";
+                      return "sun"; 
+                    };
+
                     let nextHours = [];
-                    // 抓取包含當下在內的 5 個小時區間
                     for(let i = 0; i < 5; i++) {
-                        let targetIdx = currentIndex + i;
-                        if(targetIdx < hourly.time.length) {
-                            nextHours.push({
-                                time: hourly.time[targetIdx].substring(11, 16), // 取出 HH:mm
-                                temp: Math.round(hourly.temperature_2m[targetIdx]) + "°",
-                                rain: hourly.precipitation_probability[targetIdx] + "%"
-                            });
-                        }
+                       let targetIdx = currentIndex + i;
+                       if(targetIdx < hourly.time.length) {
+                           nextHours.push({
+                               time: hourly.time[targetIdx].substring(11, 16),
+                               temp: Math.round(hourly.temperature_2m[targetIdx]) + "°",
+                               rain: hourly.precipitation_probability[targetIdx] + "%",
+                               icon: getIconByCode(hourly.weathercode[targetIdx]) 
+                           });
+                       }
                     }
 
-                    let code = current.weathercode;
-                    let icon = "sun";
-                    if (code >= 1 && code <= 3) icon = "cloud-sun";
-                    else if (code >= 45 && code <= 48) icon = "cloud-fog";
-                    else if (code >= 51 && code <= 82) icon = "cloud-rain";
-                    else if (code >= 95) icon = "cloud-lightning";
+                    // 【修正點】：取得當下天氣的圖示
+                    const currentIcon = getIconByCode(current.weathercode);
                     
                     liveWeather = { 
                         temp: Math.round(current.temperature), 
                         hourly: nextHours, 
-                        icon: icon, 
+                        icon: currentIcon, // 【修正點】：把原本報錯的 icon 換成剛剛取得的 currentIcon
                         locationName: locationName 
                     };
                     if (currentTab === 'itinerary') render();
@@ -354,14 +506,22 @@
                             </div>
 
                             <div class="pt-3 border-t border-[rgba(0,0,0,0.05)] flex gap-2 overflow-x-auto no-scrollbar text-[11px] font-bold text-[var(--text-secondary)] justify-between">
-                                ${liveWeather.hourly.map(h => `
-                                    <div class="shrink-0 flex flex-col items-center">
-                                        <span class="mb-1">${h.time}</span>
-                                        <div class="flex items-center gap-0.5 text-[#007AFF]">
-                                            <i data-lucide="droplet" class="w-2 h-2 fill-current"></i>${h.rain}
-                                        </div>
-                                    </div>
-                                `).join('')}
+
+                            ${liveWeather.hourly.map(h => `
+                            <div class="shrink-0 flex flex-col items-center">
+                                 <span class="text-[10px] mb-1 font-bold text-[var(--text-secondary)]">${h.time}</span>
+        
+                            <!-- 把圖示跟溫度放在同一排 -->
+                            <div class="flex items-center gap-1 mb-1 text-[var(--text-primary)] font-bold text-[12px]">
+                                <i data-lucide="${h.icon}" class="w-3.5 h-3.5"></i>
+                                <span>${h.temp}</span>
+                            </div>
+        
+                            <div class="flex items-center gap-0.5 text-[#007AFF] text-[9.5px]">
+                                <i data-lucide="droplet" class="w-[9px] h-[9px] fill-current"></i>${h.rain}
+                            </div>
+                            </div>
+                            `).join('')}
                             </div>
                         </div>
 
@@ -385,10 +545,24 @@
                 const mergedSched = getMergedSchedule(selectedDayId);
                 
                 // 智慧定位：尋找當前或下一個行程
+                // 取得當前真實日期與時間
                 const now = new Date();
+// 將月份與日期格式化為 "M/D" (例如 "8/5")
+                const todayStr = (now.getMonth() + 1) + '/' + now.getDate();
                 const currentStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-                let nextEventIndex = mergedSched.findIndex(e => e.time >= currentStr);
-                if (nextEventIndex === -1 && mergedSched.length > 0) nextEventIndex = mergedSched.length - 1; 
+
+// 找出目前選中的標籤 (selectedDayId) 對應的是哪一天 (例如 "8/5")
+                const selectedDateStr = travelData.days.find(d => d.id === selectedDayId).date;
+
+                let nextEventIndex = -1; // 預設為 -1 (不顯示高亮進度點)
+
+// 關鍵防呆：只有當「真實日期」等於「選中的行程日期」時，才計算進度點！
+                if (todayStr === selectedDateStr) {
+                nextEventIndex = mergedSched.findIndex(e => e.time >= currentStr);
+                if (nextEventIndex === -1 && mergedSched.length > 0) {
+                nextEventIndex = mergedSched.length - 1; // 如果今天行程全結束，停在最後一個
+                }
+                }
 
                 let scheduleHtml = `<div class="space-y-0 pb-10 mt-2">`; 
                 
@@ -401,7 +575,8 @@
                     let guideHtml = item.guide ? `<button onclick="openModal('global-modal', '${encodeURIComponent(JSON.stringify(item.guide))}')" class="mt-3 w-fit px-4 bg-[#F5F5F7] text-[var(--text-primary)] py-2 rounded-full text-[11px] font-bold tracking-wide flex justify-center items-center gap-1.5 hover:bg-[#E5E5EA] transition-colors"><i data-lucide="image" class="w-3.5 h-3.5"></i> 景點故事</button>` : '';
                     let restHtml = item.restaurants ? `<div class="mt-4 pt-3 border-t border-gray-100 space-y-3">${item.restaurants.map(r => `<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="text-[13px] font-bold text-[var(--text-primary)]">${r.name}</span><span class="text-[9px] font-bold text-[var(--text-secondary)] bg-[#F0F0F0] px-2 py-0.5 rounded-full">${r.tag}</span></div><span class="text-[11px] font-bold text-gray-500">${r.highlight}</span></div>`).join('')}</div>` : '';
 
-                    let finalDesc = linkify(item.desc);
+                    let safeDesc = item.isCustom ? escapeHTML(item.desc) : item.desc;
+                    let finalDesc = linkify(safeDesc);
 
                     let dotStyle = isNext ? "w-3.5 h-3.5 rounded-full bg-[var(--text-primary)] ping-dot z-10 mt-6 shadow-sm relative flex items-center justify-center" : "w-3 h-3 rounded-full border-2 border-[var(--text-primary)] bg-white z-10 mt-6 shadow-sm";
                     let innerPing = isNext ? `<span class="absolute w-full h-full bg-[var(--text-primary)] rounded-full animate-ping opacity-60"></span>` : '';
@@ -443,29 +618,150 @@
 
             } 
             else if (currentTab === 'explore') {
-                container.innerHTML = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-3xl font-bold tracking-tight">探索周邊</h2>
-                    </div>
-                    <p class="text-lg text-[var(--text-secondary)] font-medium mb-6">為您精選附近的質感美食與私房景點。</p>
-                    
-                    <div class="space-y-6 fade-in pb-10">
-                        ${exploreData.map(place => `
-                            <div class="glass-card overflow-hidden shadow-sm group border border-[rgba(0,0,0,0.05)]">
-                                <div class="h-56 w-full overflow-hidden">
-                                    <img src="${place.img}" alt="${place.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                // --- 1. 待機畫面 (Idle State) ---
+                if (exploreState === 'idle') {
+                    container.innerHTML = `
+                        <div class="flex flex-col justify-center items-center py-16 fade-in relative z-10 h-[65vh]">
+                            <div class="relative mb-8">
+                                <div class="absolute inset-0 bg-[var(--accent-active)] blur-2xl opacity-20 rounded-full animate-pulse"></div>
+                                <div class="w-24 h-24 bg-white/80 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center border border-[var(--border-glass)] relative z-10">
+                                    <i data-lucide="compass" class="w-12 h-12 text-[var(--text-primary)]"></i>
                                 </div>
-                                <div class="p-5">
-                                    <h3 class="text-2xl font-bold text-[var(--text-primary)] leading-tight mb-3">${place.name}</h3>
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <span class="bg-[#F3EFEA] text-[var(--text-primary)] text-base font-bold px-3 py-1.5 rounded-full">${place.category}</span>
-                                        <span class="text-base font-bold text-[var(--text-secondary)]"><i data-lucide="map-pin" class="w-4 h-4 inline pb-0.5"></i> ${place.distance}</span>
+                            </div>
+                            <h2 class="text-3xl font-bold tracking-tight mb-3">探索周邊</h2>
+                            <p class="text-[14px] text-[var(--text-secondary)] font-medium mb-10 text-center leading-relaxed">
+                                讓系統透過 GPS 定位<br>為您尋找步行 10 分鐘內的質感好店。
+                            </p>
+                            
+                            <div class="w-full space-y-4 px-2">
+                                <button onclick="setExploreMode('nearby')" class="w-full bg-[var(--text-primary)] text-white py-4 rounded-xl font-bold text-[15px] flex justify-center items-center gap-2 shadow-md active:scale-95 transition-transform">
+                                    <i data-lucide="radar" class="w-5 h-5"></i> 探索 (10分鐘步行圈)
+                                </button>
+                                <button onclick="setExploreMode('all')" class="w-full bg-white text-[var(--text-primary)] border border-[var(--border-glass)] py-4 rounded-xl font-bold text-[15px] flex justify-center items-center gap-2 shadow-sm active:scale-95 transition-transform">
+                                    <i data-lucide="map" class="w-5 h-5"></i> 瀏覽所有精選清單
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return; // 停在這裡，先不進行後續的距離運算
+                }
+				
+		
+  
+                // --- 2. 距離運算與資料處理 (進入 nearby 或 all 狀態) ---
+                function getDistance(lat1, lon1, lat2, lon2) {
+                    const R = 6371; 
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                              Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    return R * c;
+                }
+
+                // 取得當前 GPS 座標，若無則預設為雪梨市中心 (QVB 附近)
+                const userLat = -33.8731; 
+                const userLng = 151.2061;
+
+                let processedPlaces = explorePlacesData.map(place => {
+                    const distKm = getDistance(userLat, userLng, place.lat, place.lng);
+                    const walkMins = Math.round(distKm * 15); 
+                    return { ...place, distKm, walkMins };
+                });
+
+                // 根據模式過濾距離
+                if (exploreState === 'nearby') {
+                    processedPlaces = processedPlaces.filter(p => p.distKm <= 1.0);
+                }
+
+                // 根據頂部標籤過濾分類
+                if (selectedExploreCategory !== '全部') {
+                    processedPlaces = processedPlaces.filter(p => p.category === selectedExploreCategory);
+                }
+
+                // 依照距離由近到遠排序
+                processedPlaces.sort((a, b) => a.distKm - b.distKm);
+
+                // --- 3. 渲染分類橫向滑動標籤 ---
+                const categories = ['全部', '正餐', '點心類', '景點'];
+                let filterTabsHtml = `
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-5 snap-x relative z-20">
+                        ${categories.map(cat => {
+                            const isActive = selectedExploreCategory === cat;
+                            const styleClass = isActive 
+                                ? 'bg-[var(--text-primary)] text-white shadow-md' 
+                                : 'bg-white border border-[var(--border-glass)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
+                            return `<button onclick="setExploreCategory('${cat}')" class="snap-center shrink-0 px-4 py-2 rounded-full text-[13px] font-bold transition-all ${styleClass}">${cat}</button>`;
+                        }).join('')}
+                    </div>
+                `;
+
+                // --- 4. 渲染清單畫面 ---
+                const toggleMode = exploreState === 'all' ? 'nearby' : 'all';
+                const toggleText = exploreState === 'all' ? '顯示附近' : '查看全部';
+                const toggleIcon = exploreState === 'all' ? 'map-pin' : 'map';
+
+                container.innerHTML = `
+                    <div class="flex justify-between items-end mb-4 relative z-10 fade-in">
+                        <div>
+                            <button onclick="setExploreMode('idle')" class="flex items-center gap-1 text-[13px] font-bold text-[var(--text-secondary)] mb-2 hover:text-[var(--text-primary)] transition-colors active:scale-95">
+                                <i data-lucide="chevron-left" class="w-4 h-4 -ml-1"></i>重新查詢
+                            </button>
+                            <h2 class="text-3xl font-bold tracking-tight">探索周邊</h2>
+                            <p class="text-[13px] text-[var(--text-secondary)] font-medium mt-1">
+                                ${exploreState === 'all' ? '雪梨全區精選' : '步行 10 分鐘生活圈'}
+                            </p>
+                        </div>
+                        <button onclick="setExploreMode('${toggleMode}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[var(--border-glass)] rounded-full text-[12px] font-bold text-[var(--text-primary)] shadow-sm active:scale-95 transition-all">
+                            <i data-lucide="${toggleIcon}" class="w-3.5 h-3.5"></i> ${toggleText}
+                        </button>
+                    </div>
+
+                    ${filterTabsHtml}
+                    
+                    <div class="space-y-4 fade-in pb-10 relative z-10">
+                        ${processedPlaces.map(place => `
+                            <div class="glass-card p-5 shadow-sm border border-[rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col">
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--border-glass)] rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+
+                                <div class="relative z-10">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="text-[17px] font-bold text-[var(--text-primary)] leading-tight pr-2">${place.name}</h3>
+                                        <span class="bg-[#F3EFEA] text-[var(--text-primary)] text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0">${place.category}</span>
                                     </div>
-                                    <p class="text-lg font-medium text-[var(--text-secondary)] leading-relaxed">${place.desc}</p>
-                                    <button onclick="alert('預留擴充：準備導航至 ${place.name}')" class="mt-5 w-full bg-[var(--text-primary)] text-white py-3.5 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md active:scale-95 transition-transform"><i data-lucide="navigation" class="w-5 h-5"></i>前往朝聖</button>
+
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="flex items-center text-[12px] font-bold text-[#D97706]"><i data-lucide="star" class="w-3.5 h-3.5 fill-current mr-1"></i>${place.rating}</span>
+                                        ${place.is_vegetarian ? `<span class="flex items-center text-[11px] font-bold text-[#34C759] bg-[#E8F8EE] px-1.5 py-0.5 rounded"><i data-lucide="leaf" class="w-3 h-3 mr-0.5"></i>素食友善</span>` : ''}
+                                    </div>
+
+                                    <p class="text-[13px] font-medium text-[var(--text-secondary)] mb-4"><span class="font-bold">重點特色：</span>${place.specialty}</p>
+
+                                    <div class="flex items-center justify-between border-t border-[rgba(0,0,0,0.05)] pt-4 mt-auto">
+                                    <div class="flex flex-col gap-0.5 text-[12px] font-bold text-[var(--text-secondary)]">
+                                        <span class="flex items-center gap-1.5"><i data-lucide="footprints" class="w-3.5 h-3.5"></i>約 ${place.walkMins} 分鐘</span>
+                                        <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>距離 ${place.distKm.toFixed(1)} km</span>
+                                    </div>
+    
+                                    <!-- 改變這裡：點擊改為觸發我們剛寫的 Map Modal -->
+                                    <button onclick="openMapModal('${place.name}', ${place.lat}, ${place.lng}, '${place.distKm.toFixed(1)}', '${place.walkMins}')" class="bg-[var(--text-primary)] text-white px-4 py-2.5 rounded-xl font-bold text-[13px] flex justify-center items-center gap-1.5 shadow-sm active:scale-95 transition-transform">
+                                        <i data-lucide="map" class="w-3.5 h-3.5"></i>預覽地圖
+                                    </button>
+                                </div>
                                 </div>
                             </div>
                         `).join('')}
+                        
+                        ${processedPlaces.length === 0 ? `
+                            <div class="text-center py-12 text-[var(--text-secondary)] bg-white/30 rounded-2xl border border-dashed border-[var(--border-glass)]">
+                                <i data-lucide="ghost" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+                                <p class="font-bold text-[14px] mb-1">附近沒有符合條件的地點</p>
+                                <p class="text-[12px] mb-4">試著切換分類，或是擴大搜尋範圍</p>
+                                <button onclick="setExploreMode('all')" class="px-4 py-2 bg-[var(--text-primary)] text-white font-bold text-[12px] rounded-full shadow-sm">顯示全部地點</button>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }
@@ -478,8 +774,8 @@
                             <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">日期</label><select id="add-day" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none">${travelData.days.map(d => `<option value="${d.id}">${d.date} ${d.weekday}</option>`).join('')}</select></div>
                             <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">時間</label><input type="time" id="add-time" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" value="15:00"></div>
                         </div>
-                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">標題</label><input type="text" id="add-title" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" placeholder="例如：喝杯咖啡"></div>
-                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">備註與連結</label><textarea id="add-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-medium text-[13px] focus:outline-none resize-none h-16 leading-relaxed" placeholder="貼上網址會自動變成質感按鈕哦..."></textarea></div>
+                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">標題</label><input type="text" id="add-title" class="w-full border-b border-gray-200 bg-transparent py-2 font-bold focus:outline-none" placeholder="例如：喝杯咖啡..."></div>
+                        <div><label class="block text-xs font-bold text-[var(--text-secondary)] mb-2">備註與連結</label><textarea id="add-desc" class="w-full border-b border-gray-200 bg-transparent py-2 font-medium text-[13px] focus:outline-none resize-none h-16 leading-relaxed" placeholder="貼上網址會自動變成連結按鈕哦!"></textarea></div>
                         <button onclick="addCustomEvent()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-3.5 font-bold text-[14px] shadow-sm transition-transform active:scale-95 flex items-center justify-center gap-2"><i data-lucide="pen-line" class="w-4 h-4"></i>寫入專屬行程</button>
                     </div>
                 `;
@@ -487,113 +783,219 @@
             else if (currentTab === 'prep') {
                 const isDep = prepTab === 'departure';
                 
+                // 1. 修復無法點擊：加入 relative z-20 突破圖層干擾，並將標題簡化為「去程」、「回程」
                 let toggleHtml = `
-                    <div class="flex bg-gray-100 p-1 rounded-xl mb-6 shadow-inner">
-                        <button onclick="setPrepTab('departure')" class="flex-1 py-2 text-[13px] font-bold rounded-lg transition-colors ${isDep ? 'bg-white shadow text-black' : 'text-gray-400'}">🛫 去程</button>
-                        <button onclick="setPrepTab('return')" class="flex-1 py-2 text-[13px] font-bold rounded-lg transition-colors ${!isDep ? 'bg-white shadow text-black' : 'text-gray-400'}">🛬 回程</button>
+                    <div class="flex p-1 rounded-xl mb-6 shadow-sm border border-[var(--border-glass)] relative z-20" style="background-color: rgba(44, 30, 22, 0.04);">
+                        <button onclick="setPrepTab('departure')" class="flex-1 py-2 text-[14px] font-bold rounded-lg transition-all ${isDep ? 'bg-white shadow-md text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}">去程</button>
+                        <button onclick="setPrepTab('return')" class="flex-1 py-2 text-[14px] font-bold rounded-lg transition-all ${!isDep ? 'bg-white shadow-md text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}">回程</button>
                     </div>
                 `;
 
                 let contentHtml = '';
                 if(isDep) {
                     contentHtml = `
-                        <div class="glass-card overflow-hidden mb-6 relative fade-in"><div class="absolute top-0 right-0 bg-[#1D1D1F] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">出發</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI051</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">TPE</div><i data-lucide="plane-takeoff" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">SYD</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between text-gray-600"><span>8月4日 23:30</span><span>10:45 落地</span></div></div></div>
+                        <div class="glass-card overflow-hidden mb-6 relative fade-in z-10"><div class="absolute top-0 right-0 bg-[#2C1E16] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">出發</div><div class="bg-white/50 px-5 py-3 border-b border-[var(--border-glass)]"><span class="text-[11px] font-bold tracking-widest">CI051</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">TPE</div><i data-lucide="plane-takeoff" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">SYD</div></div><div class="border-t border-dashed border-[var(--border-glass)] pt-3 mt-4 text-[13px] font-bold flex justify-between text-[var(--text-secondary)]"><span>8月4日 23:30</span><span>10:45 落地</span></div></div></div>
                         
-                        <div class="mb-6 fade-in">
-                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-gray-700"></i>澳洲海關指南</h3>
-                            <div class="space-y-2">
-                                <div class="bg-[#FFF0F0] border border-[#FFE5E5] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FF3B30] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#FF3B30] leading-tight">絕對禁止 (罰款)：<span class="font-medium text-black">肉類製品(含泡麵)、新鮮蔬果、蛋奶製品。</span></p></div>
-                                <div class="bg-[#FFF9E5] border border-[#FFEDB3] p-3 rounded-xl flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-[#FFCC00] mt-1 shrink-0"></div><p class="text-[12px] font-bold text-[#B28D00] leading-tight">紅線申報：<span class="font-medium text-black">個人常備藥(需帶英文處方箋)、超過免稅額物品。</span></p></div>
+                        <div class="mb-6 fade-in relative z-10">
+                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-[var(--text-secondary)]"></i>澳洲海關指南</h3>
+                            <div class="space-y-3">
+                                <div class="bg-white border-l-4 border-[#FF3B30] shadow-sm p-3.5 rounded-r-xl flex items-start gap-3">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 text-[#FF3B30] mt-0.5 shrink-0"></i>
+                                    <p class="text-[13px] font-bold text-[#FF3B30] leading-snug">絕對禁止 (罰款)：<br><span class="font-medium text-[var(--text-primary)] mt-1 block">肉類製品(含泡麵)、新鮮蔬果、蛋奶製品。</span></p>
+                                </div>
+                                <div class="bg-white border-l-4 border-[#D97706] shadow-sm p-3.5 rounded-r-xl flex items-start gap-3">
+                                    <i data-lucide="alert-circle" class="w-4 h-4 text-[#D97706] mt-0.5 shrink-0"></i>
+                                    <p class="text-[13px] font-bold text-[#D97706] leading-snug">紅線申報：<br><span class="font-medium text-[var(--text-primary)] mt-1 block">個人常備藥(需帶英文處方箋)、超過免稅額物品。</span></p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="space-y-5 pb-6 fade-in">
-                            ${Object.entries(travelData.checklistDeparture).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-gray-200 pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
+                        <div class="space-y-5 pb-6 fade-in relative z-10">
+                            ${Object.entries(travelData.checklistDeparture).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-[var(--border-glass)] pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
                                 const isChecked = appData.checkItems[item] ? 'checked' : '';
-                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-gray-300 flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-gray-800 bg-gray-800' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
+                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-[var(--border-glass)] flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-[var(--text-primary)] bg-[var(--text-primary)]' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
                             }).join('')}</div></div>`).join('')}
                         </div>
                     `;
                 } else {
                     contentHtml = `
-                        <div class="glass-card overflow-hidden mb-6 relative fade-in"><div class="absolute top-0 right-0 bg-[#A3B18A] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">返家</div><div class="bg-white/50 px-5 py-3 border-b border-gray-100"><span class="text-[11px] font-bold tracking-widest">CI052</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">SYD</div><i data-lucide="plane-landing" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">TPE</div></div><div class="border-t border-dashed border-gray-200 pt-3 mt-4 text-[13px] font-bold flex justify-between text-gray-600"><span>8月10日</span><span>22:10 起飛</span></div></div></div>
+                        <div class="glass-card overflow-hidden mb-6 relative fade-in z-10"><div class="absolute top-0 right-0 bg-[#A9B5A2] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">返家</div><div class="bg-white/50 px-5 py-3 border-b border-[var(--border-glass)]"><span class="text-[11px] font-bold tracking-widest">CI052</span></div><div class="p-5"><div class="flex justify-between items-center mb-1"><div class="text-3xl font-bold">SYD</div><i data-lucide="plane-landing" class="w-5 h-5 text-gray-400"></i><div class="text-3xl font-bold">TPE</div></div><div class="border-t border-dashed border-[var(--border-glass)] pt-3 mt-4 text-[13px] font-bold flex justify-between text-[var(--text-secondary)]"><span>8月10日</span><span>22:10 起飛</span></div></div></div>
                         
-                        <div class="mb-6 fade-in">
-                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-gray-700"></i>TRS 退稅提醒</h3>
-                            <div class="bg-[#F5F5F7] border border-gray-200 p-4 rounded-xl text-[13px] font-medium leading-relaxed text-gray-600">
-                                務必提早 2-3 小時抵達機場。退稅商品需隨身攜帶（除液體類需先給海關查驗蓋章才能托運）。請將<span class="font-bold text-black">實體發票</span>與商品準備好以供查驗。
+                        <div class="mb-6 fade-in relative z-10">
+                            <h3 class="font-bold text-[15px] mb-3 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-[var(--text-secondary)]"></i>TRS 退稅提醒</h3>
+                            <div class="bg-white border-l-4 border-[var(--text-primary)] shadow-sm p-4 rounded-r-xl text-[13px] font-medium leading-relaxed text-[var(--text-secondary)]">
+                                務必提早 2-3 小時抵達機場。退稅商品需隨身攜帶（除液體類需先給海關查驗蓋章才能托運）。請將<span class="font-bold text-[var(--text-primary)]">實體發票</span>與商品準備好以供查驗。
                             </div>
                         </div>
 
-                        <div class="space-y-5 pb-6 fade-in">
-                            ${Object.entries(travelData.checklistReturn).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-gray-200 pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
+                        <div class="space-y-5 pb-6 fade-in relative z-10">
+                            ${Object.entries(travelData.checklistReturn).map(([category, items]) => `<div><h3 class="font-bold text-[14px] mb-3 border-b border-[var(--border-glass)] pb-1">${category}</h3><div class="space-y-0">${items.map(item => { 
                                 const isChecked = appData.checkItems[item] ? 'checked' : '';
-                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-gray-300 flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-gray-800 bg-gray-800' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
+                                return `<label class="flex items-center gap-3 cursor-pointer py-2 group"><div class="w-[18px] h-[18px] rounded border-2 border-[var(--border-glass)] flex items-center justify-center bg-white transition-colors ${isChecked ? 'border-[var(--text-primary)] bg-[var(--text-primary)]' : ''}"><input type="checkbox" class="opacity-0 absolute" onchange="toggleCheck(this, '${item}')" ${isChecked}><i data-lucide="check" class="w-3 h-3 text-white ${isChecked ? '' : 'scale-0'} transition-transform"></i></div><span class="check-text text-[14px] font-medium transition-colors ${isChecked ? 'strikethrough' : ''}">${item}</span></label>`
                             }).join('')}</div></div>`).join('')}
                         </div>
                     `;
                 }
 
-                container.innerHTML = `<h2 class="text-2xl font-bold tracking-tight mb-5">行前準備</h2>` + toggleHtml + contentHtml;
+                container.innerHTML = `<h2 class="text-2xl font-bold tracking-tight mb-5 relative z-10">行前準備</h2>` + toggleHtml + contentHtml;
             }
+			
             else if (currentTab === 'tools') {
-                const totalAud = appData.expenses.reduce((sum, item) => sum + parseFloat(item.aud), 0);
-                const totalTwd = Math.round(totalAud * AUD_RATE);
+                // 【記帳頁面：動態圓餅圖與分類邏輯重構】
+                let totalAud = 0;
+                let catTotals = { '餐飲': 0, '交通': 0, '購物': 0, '伴手禮': 0, '其他': 0 };
 
                 const groupedExp = {};
                 appData.expenses.forEach(exp => {
                     const d = exp.date || '其他';
                     if(!groupedExp[d]) groupedExp[d] = [];
                     groupedExp[d].push(exp);
+                    
+                    const cat = exp.category || '其他';
+                    if(catTotals[cat] === undefined) catTotals[cat] = 0;
+                    catTotals[cat] += parseFloat(exp.aud);
+                    totalAud += parseFloat(exp.aud);
                 });
 
+                const totalTwd = Math.round(totalAud * AUD_RATE);
+
+                let gradientStops = [];
+                let currentPercent = 0;
+                if (totalAud === 0) {
+                    gradientStops.push(`#E5E5EA 0% 100%`); 
+                } else {
+                    for (const [cat, amount] of Object.entries(catTotals)) {
+                        if (amount > 0) {
+                            const percent = (amount / totalAud) * 100;
+                            const color = categoryColors[cat] || '#E5E5EA';
+                            gradientStops.push(`${color} ${currentPercent}% ${currentPercent + percent}%`);
+                            currentPercent += percent;
+                        }
+                    }
+                }
+                const dynamicConicGradient = `conic-gradient(${gradientStops.join(', ')})`;
+
+                // 編輯模式的工具列
+                let editBarHtml = '';
+                if (isExpenseEditMode && appData.expenses.length > 0) {
+                    editBarHtml = `
+                        <div class="flex gap-3 mb-4 fade-in">
+                            <button onclick="deleteSelectedExpenses()" class="flex-1 py-2.5 bg-white border border-[var(--border-glass)] text-[var(--text-primary)] rounded-xl text-[13px] font-bold shadow-sm flex justify-center items-center gap-1.5 active:scale-95 transition-transform"><i data-lucide="trash-2" class="w-4 h-4"></i>刪除所選 (${selectedExpenses.size})</button>
+                            <button onclick="clearAllExpenses()" class="flex-1 py-2.5 bg-[#FFF0F0] text-[#FF3B30] border border-[#FFE5E5] rounded-xl text-[13px] font-bold shadow-sm flex justify-center items-center gap-1.5 active:scale-95 transition-transform"><i data-lucide="alert-triangle" class="w-4 h-4"></i>一鍵清空</button>
+                        </div>
+                    `;
+                }
+
                 container.innerHTML = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-3xl font-bold tracking-tight">財務與預算</h2>
+                    <div class="mb-6 relative z-10">
+                        <h2 class="text-2xl font-bold tracking-tight">財務與記帳</h2>
                     </div>
 
-                    <div class="glass-card p-6 flex flex-col items-center justify-center fade-in mb-8">
-                        <div class="text-center">
-                            <span class="text-lg font-bold text-[var(--text-secondary)] mb-2 block">總計花費 (TWD)</span>
-                            <span class="text-5xl font-bold tracking-tight text-[var(--text-primary)]">$${totalTwd.toLocaleString()}</span>
+                    <div class="glass-card p-6 flex flex-col items-center justify-center fade-in mb-6 shadow-sm relative z-10">
+                        <div class="w-[160px] h-[160px] rounded-full mb-6 shadow-sm relative flex items-center justify-center transition-all duration-700" style="background: ${dynamicConicGradient}; border: 1px solid var(--border-glass);">
+                            <div class="w-[110px] h-[110px] bg-[var(--bg-body)] rounded-full flex flex-col items-center justify-center shadow-inner">
+                                <span class="text-[11px] font-bold text-[var(--text-secondary)] mb-0.5">總花費 (TWD)</span>
+                                <span class="text-xl font-bold tracking-tight text-[var(--text-primary)]">$${totalTwd.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center gap-4 text-[12px] font-bold text-[var(--text-secondary)]">
+                            ${Object.entries(catTotals).filter(([k,v]) => v > 0).map(([cat, val]) => `
+                                <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-full" style="background-color: ${categoryColors[cat]}"></div>${cat}</div>
+                            `).join('')}
                         </div>
                     </div>
 
-                    <div class="glass-card p-6 fade-in mb-8">
+                    <!-- 記帳輸入區 -->
+                    ${!isExpenseEditMode ? `
+                    <div class="glass-card p-6 fade-in mb-6 relative z-10">
                         <div class="mb-5">
-                            <label class="text-lg font-bold text-[var(--text-secondary)] tracking-wider block mb-3">澳幣金額 (AUD)</label>
-                            <div class="flex items-end gap-3 border-b-2 border-[rgba(0,0,0,0.1)] pb-3">
-                                <span class="text-4xl font-bold text-[var(--text-secondary)] mb-1">$</span>
-                                <input type="number" id="aud-input" oninput="updateTwdEstimate()" class="w-full bg-transparent font-bold text-5xl focus:outline-none text-[var(--text-primary)]" placeholder="0">
+                            <label class="text-[11px] font-bold text-[var(--text-secondary)] tracking-wider block mb-2">澳幣金額 (AUD)</label>
+                            <div class="flex items-end gap-2 border-b border-[rgba(0,0,0,0.1)] pb-2">
+                                <span class="text-3xl font-bold text-[var(--text-secondary)] mb-1">$</span>
+                                <input type="number" id="aud-input" oninput="updateTwdEstimate()" class="w-full bg-transparent font-bold text-4xl focus:outline-none text-[var(--text-primary)]" placeholder="0">
                             </div>
                         </div>
                         <div class="mb-6 pl-1">
-                            <div class="text-2xl font-bold text-[var(--text-secondary)] tracking-tight" id="twd-estimate">= $0 TWD</div>
+                            <div class="text-[20px] font-bold text-[var(--text-secondary)] tracking-tight" id="twd-estimate">= $0 TWD</div>
                         </div>
-                        <div class="mb-8">
-                            <input type="text" id="exp-desc" class="w-full border-b-2 border-[rgba(0,0,0,0.1)] bg-transparent py-3 font-bold text-xl focus:outline-none text-[var(--text-primary)] placeholder-gray-400" placeholder="輸入消費項目...">
+                        
+                        <label class="text-[11px] font-bold text-[var(--text-secondary)] tracking-wider block mb-2">選擇分類</label>
+                        <div class="flex gap-2 mb-5">
+                            ${Object.keys(categoryColors).filter(c => c !== '其他').map(cat => {
+                            const isActive = selectedCategory === cat;
+                            const bgClass = isActive ? 'bg-[var(--text-primary)] text-white shadow-md scale-[1.02]' : 'bg-transparent border border-[var(--border-glass)] text-[var(--text-secondary)]';
+                            return `<button onclick="selectCategory('${cat}')" data-cat="${cat}" class="cat-btn flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95 ${bgClass}">${cat}</button>`;
+                            }).join('')}
                         </div>
-                        <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-4 font-bold text-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-6 h-6"></i>寫入記帳</button>
+
+                        <div class="mb-6">
+                            <input type="text" id="exp-desc" class="w-full border-b border-[rgba(0,0,0,0.1)] bg-transparent py-2 font-bold text-[14px] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-secondary)] opacity-80" placeholder="新增備註 (選填)...">
+                        </div>
+                        <button onclick="addExpense()" class="w-full bg-[var(--text-primary)] text-white rounded-xl py-4 font-bold text-[15px] shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i>寫入記帳</button>
+                    </div>
+                    ` : ''}
+
+                    <!-- 歷史紀錄標題與管理按鈕移到這裡 -->
+                    <div class="flex justify-between items-end mb-4 px-1 relative z-10 fade-in">
+                        <h3 class="text-[14px] font-bold text-[var(--text-secondary)]">消費紀錄</h3>
+                        ${appData.expenses.length > 0 ? `<button onclick="toggleExpenseEditMode()" class="text-[12px] font-bold px-4 py-1.5 rounded-full transition-all shadow-sm ${isExpenseEditMode ? 'bg-[var(--text-primary)] text-white' : 'bg-white border border-[var(--border-glass)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}">${isExpenseEditMode ? '完成管理' : '管理紀錄'}</button>` : ''}
                     </div>
 
-                    <div class="space-y-6 fade-in pb-10">
-                        ${Object.keys(groupedExp).length === 0 ? '<p class="text-center text-xl text-[var(--text-secondary)] font-bold mt-6">目前尚無紀錄</p>' : ''}
+                    <!-- 歷史紀錄列表 -->
+                    <div class="space-y-4 fade-in pb-10 relative z-10">
+                        ${editBarHtml}
+                        ${Object.keys(groupedExp).length === 0 ? '<p class="text-center text-[13px] text-[var(--text-secondary)] font-medium mt-6">目前尚無紀錄</p>' : ''}
                         ${Object.entries(groupedExp).map(([date, exps]) => `
                             <div>
-                                <h3 class="text-xl font-bold text-[var(--text-secondary)] mb-3 pl-1">${date}</h3>
+                                <h3 class="text-[11px] font-bold text-[var(--text-secondary)] mb-2 pl-1">${date}</h3>
                                 <div class="space-y-3">
-                                    ${exps.map(exp => `
-                                        <div class="glass-card px-5 py-4 flex justify-between items-center shadow-sm">
-                                            <div class="flex-1 pr-4">
-                                                <span class="text-2xl font-bold text-[var(--text-primary)] block mb-1">${exp.desc}</span>
-                                                <span class="text-lg font-bold text-[var(--text-secondary)]">$${exp.aud} AUD</span>
+                                    ${exps.map(exp => {
+                                        const cat = exp.category || '其他'; 
+                                        const descHtml = exp.desc ? `<span class="text-[12px] font-medium text-[var(--text-secondary)] mt-1 block truncate">${escapeHTML(exp.desc)}</span>` : '';
+                                        const isSelected = selectedExpenses.has(exp.timestamp);
+                                        
+                                        let actionHtml = '';
+                                        if (isExpenseEditMode) {
+                                            // 編輯模式：顯示打勾框
+                                            actionHtml = `
+                                                <div class="flex items-center gap-4 shrink-0 pointer-events-none">
+                                                    <span class="text-[18px] font-bold text-[var(--text-primary)]">$${exp.twd?.toLocaleString() || Math.round(exp.aud * AUD_RATE).toLocaleString()}</span>
+                                                    <div class="w-[32px] h-[32px] flex items-center justify-center">
+                                                        <div class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-[var(--text-primary)] bg-[var(--text-primary)]' : 'border-[var(--border-glass)] bg-white'}">
+                                                            <i data-lucide="check" class="w-3.5 h-3.5 text-white ${isSelected ? '' : 'scale-0'} transition-transform"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        } else {
+    // 一般模式：顯示編輯與刪除按鈕
+                                            actionHtml = `
+                                                <div class="flex items-center gap-2.5 shrink-0">
+                                                     <span class="text-[18px] font-bold text-[var(--text-primary)]">$${exp.twd?.toLocaleString() || Math.round(exp.aud * AUD_RATE).toLocaleString()}</span>
+            
+            <!-- 這是新加的編輯按鈕 -->
+                                                <button onclick="editExpense(${exp.timestamp}); event.stopPropagation();" class="p-1.5 bg-gray-100 text-[var(--text-secondary)] rounded-full hover:bg-gray-200 transition-colors shadow-sm active:scale-90"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+            
+            <!-- 這是原本的刪除垃圾桶 -->
+                                                <button onclick="deleteExpense(${exp.timestamp}); event.stopPropagation();" class="p-1.5 bg-[#FFF0F0] text-[#FF3B30] rounded-full hover:bg-[#FFE5E5] transition-colors shadow-sm active:scale-90"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                                </div>
+                                                 `;
+                                            }
+
+                                        return `
+                                        <div class="glass-card px-5 py-4 flex justify-between items-center shadow-sm transition-transform ${isExpenseEditMode ? 'cursor-pointer active:scale-[0.98]' : ''}" ${isExpenseEditMode ? `onclick="toggleExpenseSelection(${exp.timestamp})"` : ''}>
+                                            <div class="flex-1 pr-4 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${categoryColors[cat] || '#E5E5EA'}"></div>
+                                                    <span class="text-[15px] font-bold text-[var(--text-primary)] truncate block">${cat}</span>
+                                                </div>
+                                                ${descHtml}
                                             </div>
-                                            <div class="text-right flex items-center gap-4">
-                                                <div class="text-3xl font-bold text-[var(--text-primary)]">$${exp.twd?.toLocaleString() || Math.round(exp.aud * AUD_RATE).toLocaleString()}</div>
-                                                <button onclick="deleteExpense(${exp.timestamp})" class="p-3 bg-[#FFF0F0] text-[#FF3B30] rounded-full hover:bg-[#FFE5E5] transition-colors shadow-sm active:scale-90"><i data-lucide="trash-2" class="w-6 h-6"></i></button>
-                                            </div>
+                                            ${actionHtml}
                                         </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         `).join('')}
@@ -666,21 +1068,62 @@
             }
         }
 
-        function addExpense() {
-            const aud = parseFloat(document.getElementById('aud-input').value);
-            const desc = document.getElementById('exp-desc').value;
-            if(aud && desc) {
-                const twd = Math.round(aud * AUD_RATE);
-                const today = new Date();
-                const dateStr = (today.getMonth() + 1) + '/' + today.getDate(); // 產生 "8/5" 格式
+        
+        
+		// 1. 新增編輯函式
+        // 1. 新增編輯函式 (修正執行順序版)
+        function editExpense(timestamp) {
+        // 找出要編輯的那筆資料
+        const exp = appData.expenses.find(e => e.timestamp === timestamp);
+        if (!exp) return;
+    
+        // 步驟 A：先記錄狀態
+        selectedCategory = exp.category;
+        editingExpenseId = timestamp;
+    
+        // 步驟 B：「先」重新渲染畫面 (這樣分類按鈕的顏色才會切換過去)
+        render(); 
+    
+        // 步驟 C：「後」把資料填回輸入框 (順序很重要，否則會被 render 清空！)
+        document.getElementById('aud-input').value = exp.aud;
+        document.getElementById('exp-desc').value = exp.desc || '';
+        updateTwdEstimate(); // 重新計算台幣預估
+ 
+        // 畫面自動捲動到最上方輸入區
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-                // 新增 twd 與 date 欄位
-                appData.expenses.unshift({ aud, twd, desc, date: dateStr, timestamp: Date.now() });
-                saveData(); 
-                render();
+// 2. 修改原本的 addExpense() 讓它支援「儲存」
+        function addExpense() {
+        const aud = parseFloat(document.getElementById('aud-input').value);
+        const desc = document.getElementById('exp-desc').value || '';
+        if(aud && aud > 0) {
+        const twd = Math.round(aud * AUD_RATE);
+        
+        if (editingExpenseId) {
+            // 編輯模式：更新舊資料
+            const index = appData.expenses.findIndex(e => e.timestamp === editingExpenseId);
+            if (index !== -1) {
+                appData.expenses[index].aud = aud;
+                appData.expenses[index].twd = twd;
+                appData.expenses[index].desc = desc;
+                appData.expenses[index].category = selectedCategory;
             }
+            editingExpenseId = null; // 清除編輯狀態
+        } else {
+            // 新增模式：原本的邏輯
+            const today = new Date();
+            const dateStr = (today.getMonth() + 1) + '/' + today.getDate();
+            appData.expenses.unshift({ aud, twd, desc, category: selectedCategory, date: dateStr, timestamp: Date.now() });
         }
         
+        saveData(); 
+        render();
+        } else {
+            alert('請輸入有效的澳幣金額！');
+            }
+        } 
+				
         function openModal(id, encodedGuide) {
             if(encodedGuide) {
                 const guide = JSON.parse(decodeURIComponent(encodedGuide));
@@ -708,7 +1151,57 @@
             modal.classList.remove('modal-open'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300);
         }
         function openEmergency() { openModal('emergency-modal'); }
+        		// 免費的地圖預覽 Modal
+                function openMapModal(name, lat, lng, distKm, walkMins) {
+                document.getElementById('modal-title').innerText = name;
+                document.getElementById('modal-images').style.display = 'none'; // 隱藏原本的圖片輪播區
 
+    // 使用免 API Key 的 Google Maps Embed URL
+                const mapEmbedUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+
+    // 重新組合 Modal 的內容
+                document.getElementById('modal-text').innerHTML = `
+                    <div class="flex gap-4 mb-3 text-[13px] font-bold text-[var(--text-secondary)]">
+                        <span class="flex items-center gap-1"><i data-lucide="footprints" class="w-4 h-4"></i>步行約 ${walkMins} 分鐘</span>
+                        <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i>距離 ${distKm} km</span>
+                    </div>
+                    <div class="w-full h-[250px] rounded-xl overflow-hidden shadow-inner border border-gray-200 mb-4 bg-gray-100">
+                        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="${mapEmbedUrl}"></iframe>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="flex-1 bg-[var(--text-primary)] text-white text-center py-3 rounded-xl font-bold text-[14px] shadow-sm active:scale-95 transition-transform flex justify-center items-center gap-1.5">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> 前往 Google Maps
+                        </a>
+                    </div>
+                `;
+
+    // 顯示 Modal
+                const modal = document.getElementById('global-modal');
+                modal.classList.remove('hidden'); 
+                setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                modal.classList.add('modal-open'); 
+                    lucide.createIcons();
+                    }, 10);
+                }
+				
+				// App 初始化時的情境判斷
+                const initNow = new Date();
+                const initMonth = initNow.getMonth() + 1;
+                const initDate = initNow.getDate();
+
+                if (initMonth < 8 || (initMonth === 8 && initDate < 5)) {
+    // 8/5 之前：行前準備期
+                currentTab = 'prep';
+                } else if (initMonth === 8 && initDate >= 5 && initDate <= 10) {
+                // 8/5 ~ 8/10：旅程中，自動跳到對應的那一天
+                currentTab = 'itinerary';
+                const activeDay = travelData.days.find(d => d.date === `8/${initDate}`);
+                if(activeDay) selectedDayId = activeDay.id;
+                 } else {
+    // 8/10 之後：旅程結束，看記帳與回憶
+                currentTab = 'tools';
+                }
         // 啟動 App
         render(true); 
         fetchSmartWeather(); // 呼叫具備 GPS 的智慧天氣
