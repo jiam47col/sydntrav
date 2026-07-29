@@ -1,4 +1,4 @@
-[
+
   {
     "name": "Cow & The Moon",
     "url": "https://www.google.com/maps/place/Cow+%26+The+Moon/data=!4m2!3m1!1s0x6b12b038f37ae1c5:0xe1840cb97a868c10",
@@ -205,7 +205,7 @@
     "category": "景點",
     "is_vegetarian": false,
     "specialty": "歷史紀念建築",
-    "rating": 4.7
+    "rating": 4.7,
 	"lat": -33.8757279, 
     "lng": 151.2109614
   },
@@ -478,6 +478,7 @@
     "rating": 4.6,
 	"lat": -33.8739336, 
     "lng": 151.2063454
+  },
   {
     "name": "Bar Luca",
     "url": "https://www.google.com/maps/place/Bar+Luca/data=!4m2!3m1!1s0x6b12ae698b9b0655:0xafcd3306ae42d058",
