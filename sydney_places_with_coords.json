@@ -260,6 +260,16 @@
     "lng": 151.2078496
   },
   {
+   "name": "黑色之星蛋糕坊",
+   "url": "https://www.google.com/maps/place/%E9%BB%91%E8%89%B2%E4%B9%8B%E6%98%9F%E8%9B%8B%E7%B3%95%E5%9D%8A/data=!4m2!3m1!1s0x6b12b036d67b0183:0x33c64d8aa1974359",
+   "category": "點心類",
+   "is_vegetarian": false,
+   "specialty": "草莓西瓜蛋糕/周杰倫長椅",
+   "rating": 4,
+   "lat": -33.8972123,
+   "lng": 151.1789963
+  },
+  {
     "name": "Bella Brutta",
     "url": "https://www.google.com/maps/place/Bella+Brutta/data=!4m2!3m1!1s0x6b12b1cddacdd893:0xe1cdf76fbc568afb",
     "category": "正餐",
