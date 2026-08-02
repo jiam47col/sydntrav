@@ -147,6 +147,13 @@
 // ======= 探索頁面狀態 =======
     let exploreState = 'idle'; 
     let selectedExploreCategory = '全部';
+    let exploreSort = 'distance'; // 新增這行：預設為距離排序 ('distance' 或 'rating')
+
+// 新增這個排序切換函數
+    function setExploreSort(sortType) {
+    exploreSort = sortType;
+    render();
+    }
     let explorePlacesData = []; // 改為空陣列，等待動態載入
     let isExploreDataLoaded = false; // 標記是否已經載入過
 
@@ -683,7 +690,12 @@
                 }
 
                 // 依照距離由近到遠排序
-                processedPlaces.sort((a, b) => a.distKm - b.distKm);
+                // --- 根據選擇的模式進行排序 ---
+                if (exploreSort === 'distance') {
+                     processedPlaces.sort((a, b) => a.distKm - b.distKm); // 距離由近到遠
+                } else if (exploreSort === 'rating') {
+                     processedPlaces.sort((a, b) => b.rating - a.rating); // 星等由高到低
+                }
 
                 // --- 3. 渲染分類橫向滑動標籤 ---
                 const categories = ['全部', '正餐', '點心類', '景點'];
@@ -721,10 +733,23 @@
                     </div>
 
                     ${filterTabsHtml}
-                    
-                    <div class="space-y-4 fade-in pb-10 relative z-10">
-                        ${processedPlaces.map(place => `
-                            <div class="glass-card p-5 shadow-sm border border-[rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col">
+
+<!-- ✨ 這是我們新加的排序切換開關 ✨ -->
+                        <div class="flex justify-end mb-3 relative z-20 fade-in px-1">
+                             <div class="bg-[#E5E5EA] p-1 rounded-lg flex inline-flex text-[12px] font-bold shadow-inner">
+                             <button onclick="setExploreSort('distance')" class="px-3 py-1.5 rounded-md transition-all duration-300 ${exploreSort === 'distance' ? 'bg-white shadow-sm text-[var(--text-primary)] scale-100' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] scale-95'}">
+                            距離最近
+                            </button>
+                        <button onclick="setExploreSort('rating')" class="px-3 py-1.5 rounded-md transition-all duration-300 ${exploreSort === 'rating' ? 'bg-white shadow-sm text-[var(--text-primary)] scale-100' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] scale-95'}">
+                            星等最高
+                            </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 fade-in pb-10 relative z-10">
+                    ${processedPlaces.map(place => `
+                            
+							<div class="glass-card p-5 shadow-sm border border-[rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col">
                                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--border-glass)] rounded-full blur-2xl opacity-50 pointer-events-none"></div>
 
                                 <div class="relative z-10">
