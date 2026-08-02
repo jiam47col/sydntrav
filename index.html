@@ -70,34 +70,7 @@
         .modal-content { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </head>
-<body class="max-w-md mx-auto min-h-screen pb-28">
-
-    <!-- 2. ✨ 新增這層：專門用來裝內容，避免左右滑動 -->
-    <div class="overflow-x-hidden relative w-full min-h-screen">
-        
-        <!-- 背景光暈放在這裡面 -->
-        <div class="bg-blobs"><div class="blob-1"></div><div class="blob-2"></div></div>
-
-        <!-- 頂部 Header -->
-        <header class="sticky top-0 z-40 glass-panel px-6 py-4 flex justify-between items-center">
-            <!-- ... 原本的 Header 內容 ... -->
-        </header>
-
-        <!-- 主要畫面內容區 -->
-        <main id="app-content" class="px-5 py-6 min-h-[75vh]"></main>
-        
-    </div> <!-- ✨ 內容包裝層到此結束 -->
-
-
-    <!-- 3. ⚠️ 絕對關鍵：底部的 nav 導覽列，一定要獨立放在 overflow-x-hidden 外面！ -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-nav-bottom flex justify-between z-40 px-2 pb-6 pt-3">
-        <!-- ... 原本的 Nav 按鈕 ... -->
-    </nav>
-
-    <!-- 4. 同理，所有會「蓋住全畫面」的 Modal 也都要放在外面 -->
-    <div id="global-modal" class="fixed inset-0 z-[100] ...">...</div>
-    <div id="emergency-modal" class="fixed inset-0 z-[100] ...">...</div>
-    <div id="whitespace-modal" class="fixed inset-0 z-[100] ...">...</div>
+<body class="max-w-md mx-auto min-h-screen relative pb-28 overflow-x-hidden">
 
     <div class="bg-blobs"><div class="blob-1"></div><div class="blob-2"></div></div>
 
