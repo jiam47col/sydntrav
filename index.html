@@ -734,16 +734,14 @@
 
                     ${filterTabsHtml}
 
-<!-- ✨ 這是我們新加的排序切換開關 ✨ -->
-                        <div class="flex justify-end mb-3 relative z-20 fade-in px-1">
-                             <div class="bg-[#E5E5EA] p-1 rounded-lg flex inline-flex text-[12px] font-bold shadow-inner">
-                             <button onclick="setExploreSort('distance')" class="px-3 py-1.5 rounded-md transition-all duration-300 ${exploreSort === 'distance' ? 'bg-white shadow-sm text-[var(--text-primary)] scale-100' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] scale-95'}">
-                            距離最近
+                   <!-- 排序切換開關  -->
+                        <div class="flex justify-end gap-2 mb-3 relative z-20 fade-in px-1">
+                            <button onclick="setExploreSort('distance')" class="px-3 py-1.5 rounded-full text-[12px] font-bold transition-all duration-300 border flex items-center gap-1 ${exploreSort === 'distance' ? 'bg-[var(--bg-card)] border-[var(--border-glass)] shadow-sm text-[var(--text-primary)] scale-105' : 'bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-white/40'}">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 找最近
                             </button>
-                        <button onclick="setExploreSort('rating')" class="px-3 py-1.5 rounded-md transition-all duration-300 ${exploreSort === 'rating' ? 'bg-white shadow-sm text-[var(--text-primary)] scale-100' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] scale-95'}">
-                            星等最高
+                            <button onclick="setExploreSort('rating')" class="px-3 py-1.5 rounded-full text-[12px] font-bold transition-all duration-300 border flex items-center gap-1 ${exploreSort === 'rating' ? 'bg-[var(--bg-card)] border-[var(--border-glass)] shadow-sm text-[var(--text-primary)] scale-105' : 'bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-white/40'}">
+                            <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i> 按評價
                             </button>
-                            </div>
                         </div>
 
                         <div class="space-y-4 fade-in pb-10 relative z-10">
