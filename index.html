@@ -1035,9 +1035,21 @@
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
         function selectDate(id) { 
-            selectedDayId = id; 
-            render(true); 
-            setTimeout(() => { const btn = document.getElementById(`btn-${id}`); if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 50); 
+        selectedDayId = id; 
+        render(true); 
+    
+         // 🐛 修正：改用精準的容器局部捲動，徹底解決整個網頁被往左推的跑版 Bug
+        setTimeout(() => { 
+        const btn = document.getElementById(`btn-${id}`); 
+        if (btn && btn.parentElement) {
+            const container = btn.parentElement;
+            // 只針對日期這條橫列進行滑動，絕對不會動到背景或其他排版
+            container.scrollTo({
+                left: btn.offsetLeft - (container.offsetWidth / 2) + (btn.offsetWidth / 2),
+                behavior: 'smooth'
+            });
+        }
+        }, 50); 
         }
         function setPrepTab(tab) { prepTab = tab; render(); }
         function toggleChartView() { isChartView = !isChartView; render(); }
